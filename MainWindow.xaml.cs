@@ -1,5 +1,7 @@
-﻿using System;
+﻿using GalaSoft.MvvmLight.Command;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,11 +20,46 @@ namespace WpfPlotDigitizer2
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window
+	public partial class MainWindow : Window, INotifyPropertyChanged
 	{
 		public MainWindow()
 		{
 			InitializeComponent();
+			DataContext = this;
+			BackCommand = new RelayCommand(GoBack, CanGoBack);
+			NextCommand = new RelayCommand(GoNext, CanGoNext);
+		}
+		public int PageIndex { get; set; } = 0;
+		public Page CurrentPage => Model.PageList[PageIndex];
+
+		public event PropertyChangedEventHandler PropertyChanged;
+		protected void OnPropertyChanged(PropertyChangedEventArgs e)
+		{
+			PropertyChanged?.Invoke(this, e);
+		}
+
+
+		public RelayCommand BackCommand { get; set; } 
+		public RelayCommand NextCommand { get; set; }
+		private void GoBack()
+		{
+			PageIndex--;
+			BackCommand.RaiseCanExecuteChanged();
+			NextCommand.RaiseCanExecuteChanged();
+		}
+		private bool CanGoBack()
+		{
+			return PageIndex > 0;
+		}
+		private void GoNext()
+		{
+			PageIndex++;
+			BackCommand.RaiseCanExecuteChanged();
+			NextCommand.RaiseCanExecuteChanged();
+		}
+		private bool CanGoNext()
+		{
+			return PageIndex < Model.PageList.Count - 1;
 		}
 	}
 }
