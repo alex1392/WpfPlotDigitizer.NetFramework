@@ -12,10 +12,6 @@ namespace WpfPlotDigitizer2
 	{
 		public static BitmapImage InputImage { get; set; }
 
-		public readonly static List<Page> PageList = new List<Page>
-		{
-			new LoadPage(),
-			new Page(),
-		};
+		
 	}
 }

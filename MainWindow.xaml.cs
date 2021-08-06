@@ -30,14 +30,14 @@ namespace WpfPlotDigitizer2
 			NextCommand = new RelayCommand(GoNext, CanGoNext);
 		}
 		public int PageIndex { get; set; } = 0;
-		public Page CurrentPage => Model.PageList[PageIndex];
+		public Page CurrentPage => PageList[PageIndex];
+		public readonly List<Page> PageList = new List<Page>
+		{
+			new LoadPage(),
+			new Page(),
+		};
 
 		public event PropertyChangedEventHandler PropertyChanged;
-		protected void OnPropertyChanged(PropertyChangedEventArgs e)
-		{
-			PropertyChanged?.Invoke(this, e);
-		}
-
 
 		public RelayCommand BackCommand { get; set; } 
 		public RelayCommand NextCommand { get; set; }
@@ -59,7 +59,7 @@ namespace WpfPlotDigitizer2
 		}
 		private bool CanGoNext()
 		{
-			return PageIndex < Model.PageList.Count - 1;
+			return PageIndex < PageList.Count - 1;
 		}
 	}
 }

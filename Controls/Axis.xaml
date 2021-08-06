@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="WpfPlotDigitizer2.Axis"
+                            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                            xmlns:local="clr-namespace:WpfPlotDigitizer2"
+                            mc:Ignorable="d"
+                            d:DataContext="{d:DesignInstance local:Axis, IsDesignTimeCreatable=True}"
+                            d:DesignHeight="450"
+                            d:DesignWidth="800">
+  <Viewbox>
+    <Grid Name="gridMain"
+          Background="Transparent">
+      <Image Name="imageControl"
+             Source="{Binding ImageSource}"
+             Stretch="None" 
+             Panel.ZIndex="0"/>
+      <Border Name="shadow"
+              Background="Transparent"
+              Width="{Binding ElementName=imageControl, Path=ActualWidth}"
+              Height="{Binding ElementName=imageControl, Path=ActualHeight}"
+              Panel.ZIndex="1" />
+      <Rectangle Name="axisImage"
+                 Width="{Binding ElementName=imageControl, Path=ActualWidth}"
+                 Height="{Binding ElementName=imageControl, Path=ActualHeight}"
+                 Panel.ZIndex="2">
+        <Rectangle.Fill>
+          <VisualBrush Visual="{Binding ElementName=imageControl}"
+                       Viewbox="{Binding AxisRelative}"
+                       Viewport="{Binding AxisRelative}">
+          </VisualBrush>
+        </Rectangle.Fill>
+      </Rectangle>
+      <Rectangle Name="axisBorder"
+                 HorizontalAlignment="Left"
+                 VerticalAlignment="Top"
+                 Stroke="{Binding Stroke}"
+                 Fill="Transparent"
+                 StrokeThickness="3"
+                 Width="{Binding AxisWidth}"
+                 Height="{Binding AxisHeight}"
+                 Margin="{Binding AxisMargin}"
+                 Panel.ZIndex="3"/>
+
+    </Grid>
+
+  </Viewbox>
+</UserControl>
