@@ -38,6 +38,7 @@ namespace WpfPlotDigitizer2
 			{
 				new LoadPage(model),
 				new AxisPage(model),
+				new AxisLimitPage(model),
 			};
 		}
 

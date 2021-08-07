@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -22,9 +21,16 @@ namespace WpfPlotDigitizer2
 	{
 		public BitmapImage InputImage { get; set; }
 
+		public Rect AxisLocation { get; set; }
+
+		public Rect AxisLimit { get; set; }
+
+		public double YLogBase { get; set; }
+		public double XLogBase { get; set; }
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public Rect? GetAxis(BitmapImage bitmapImage)
+		public Rect? GetAxisLocation(BitmapImage bitmapImage)
 		{
 			var bitmap = bitmapImage.ToBitmap();
 			var mat = bitmap.ToMat();
@@ -36,7 +42,7 @@ namespace WpfPlotDigitizer2
 			var threshold = CvInvoke.Threshold(gray, binary, 0, 255, ThresholdType.Otsu | ThresholdType.BinaryInv);
 
 			var axis = new Rect();
-			var rectangles = new List<Rectangle>();
+			var rectangles = new List<System.Drawing.Rectangle>();
 			using (var contours = new VectorOfVectorOfPoint())
 			{
 				CvInvoke.FindContours(binary, contours, null, RetrType.List,
@@ -56,9 +62,9 @@ namespace WpfPlotDigitizer2
 			var rectanglesImage = new Mat(mat.Size, DepthType.Cv8U, 3);
 			foreach (var rectangle in rectangles)
 			{
-				CvInvoke.Rectangle(rectanglesImage, rectangle, new Bgr(Color.DarkOrange).MCvScalar);
+				CvInvoke.Rectangle(rectanglesImage, rectangle, new Bgr(System.Drawing.Color.DarkOrange).MCvScalar);
 			}
-			ImageViewer.Show(rectanglesImage);
+			//ImageViewer.Show(rectanglesImage);
 #endif
 
 			var filtered = rectangles.Where(r => 

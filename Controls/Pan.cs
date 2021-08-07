@@ -49,7 +49,7 @@ namespace WpfPlotDigitizer2
 			=> obj.SetValue(ClipToParentProperty, value);
 		#endregion
 
-		private static readonly Cursor panCursor = new Uri(@"pack://application:,,,/" + @"Controls/pan.cur").ToCursor();
+		private static readonly Cursor panCursor = new Uri(@"pack://application:,,,/Controls/pan.cur").ToCursor();
 		private static Cursor ToCursor(this Uri uri) => new Cursor(Application.GetResourceStream(uri).Stream);
 		private static Cursor cursorCache;
 		private static Point mouseAnchor;

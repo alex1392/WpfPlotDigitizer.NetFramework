@@ -59,6 +59,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Pages\AxisLimitPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Pages\AxisPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -80,6 +84,9 @@
     <Compile Include="Controls\Zoom.cs" />
     <Compile Include="Controls\Axis.xaml.cs">
       <DependentUpon>Axis.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\AxisLimitPage.xaml.cs">
+      <DependentUpon>AxisLimitPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\AxisPage.xaml.cs">
       <DependentUpon>AxisPage.xaml</DependentUpon>

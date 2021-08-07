@@ -30,6 +30,13 @@ namespace WpfPlotDigitizer2
 			InitializeComponent();
 			DataContext = this;
 			GetAxisCommand = new RelayCommand(GetAxis);
+			this.Unloaded += AxisPage_Unloaded;
+		}
+
+		private void AxisPage_Unloaded(object sender, RoutedEventArgs e)
+		{
+			var axisLocation = new Rect(AxisLeft, AxisTop, AxisWidth, AxisHeight);
+			model.AxisLocation = axisLocation;
 		}
 
 		public AxisPage(Model model) : this()
@@ -58,7 +65,7 @@ namespace WpfPlotDigitizer2
 		private void GetAxis()
 		{
 			var image = model.InputImage;
-			var axis = model.GetAxis(image) ?? new Rect(image.PixelWidth / 4, image.PixelHeight / 4, image.PixelWidth / 2, image.PixelHeight / 2);
+			var axis = model.GetAxisLocation(image) ?? new Rect(image.PixelWidth / 4, image.PixelHeight / 4, image.PixelWidth / 2, image.PixelHeight / 2);
 			AxisLeft = axis.Left;
 			AxisTop = axis.Top;
 			AxisWidth = axis.Width;
