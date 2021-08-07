@@ -13,17 +13,19 @@
           Background="Transparent">
       <Image Name="imageControl"
              Source="{Binding ImageSource}"
-             Stretch="None" 
-             Panel.ZIndex="0"/>
+						 Width="{Binding Image.PixelWidth}"
+						 Height="{Binding Image.PixelHeight}"
+						 Stretch="Uniform"
+						 Panel.ZIndex="0"/>
       <Border Name="shadow"
-              Background="Transparent"
-              Width="{Binding ElementName=imageControl, Path=ActualWidth}"
-              Height="{Binding ElementName=imageControl, Path=ActualHeight}"
-              Panel.ZIndex="1" />
+							Background="#4C000000"
+							Width="{Binding Image.PixelWidth}"
+							Height="{Binding Image.PixelHeight}"
+							Panel.ZIndex="1" />
       <Rectangle Name="axisImage"
-                 Width="{Binding ElementName=imageControl, Path=ActualWidth}"
-                 Height="{Binding ElementName=imageControl, Path=ActualHeight}"
-                 Panel.ZIndex="2">
+								 Width="{Binding Image.PixelWidth}"
+								 Height="{Binding Image.PixelHeight}"
+								 Panel.ZIndex="2">
         <Rectangle.Fill>
           <VisualBrush Visual="{Binding ElementName=imageControl}"
                        Viewbox="{Binding AxisRelative}"
@@ -36,7 +38,7 @@
                  VerticalAlignment="Top"
                  Stroke="{Binding Stroke}"
                  Fill="Transparent"
-                 StrokeThickness="3"
+                 StrokeThickness="1"
                  Width="{Binding AxisWidth}"
                  Height="{Binding AxisHeight}"
                  Margin="{Binding AxisMargin}"

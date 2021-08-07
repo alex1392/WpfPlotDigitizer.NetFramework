@@ -22,9 +22,16 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class LoadPage : Page
 	{
+		private Model model;
+
 		public LoadPage()
 		{
 			InitializeComponent();
+		}
+
+		public LoadPage(Model model) : this()
+		{
+			this.model = model;
 		}
 
 		private void browseButton_Loaded(object sender, RoutedEventArgs e)
@@ -36,11 +43,11 @@ namespace WpfPlotDigitizer2
 		{
 			var dialog = new OpenFileDialog();
 			dialog.Filter = "All |*.jpg;*.jpeg;*.png;*.bmp;*.tif|" +
-		"(*.jpg;*.jpeg)|*.jpg;*.jpeg|" +
-		"(*.png)|*.png|" +
-		"(*.bmp)|*.bmp|" +
-		"(*.tif)|*.tif|" +
-		"Any |*.*";
+				"(*.jpg;*.jpeg)|*.jpg;*.jpeg|" +
+				"(*.png)|*.png|" +
+				"(*.bmp)|*.bmp|" +
+				"(*.tif)|*.tif|" +
+				"Any |*.*";
 			if (dialog.ShowDialog() != true)
 			{
 				return;
@@ -51,7 +58,7 @@ namespace WpfPlotDigitizer2
 			{
 				return;
 			}
-			setImage(image);
+			SetImage(image);
 		}
 
 		private void pasteButton_Click(object sender, RoutedEventArgs e)
@@ -115,22 +122,27 @@ namespace WpfPlotDigitizer2
 			{
 				return;
 			}
-			setImage(image);
+			SetImage(image);
 		}
-
-		private void setImage(BitmapImage image)
+		public void SetImage(BitmapImage image)
 		{
-			Model.InputImage = image;
+			model.InputImage = image;
+#if DEBUG
 			this.image.Source = image;
-			// next page
+#endif
+			var mainWindow = Application.Current.MainWindow as MainWindow;
+			if (mainWindow.NextCommand.CanExecute(null))
+			{
+				mainWindow.NextCommand.Execute(null);
+			}
 		}
 		private void pasteImage()
 		{
 			if (Clipboard.ContainsImage())
 			{
 				var source = Clipboard.GetImage();
-				var image = source2image(source);
-				setImage(image);
+				var image = source.ToBitmapImage();
+				SetImage(image);
 			}
 			else if (Clipboard.ContainsFileDropList())
 			{
@@ -141,7 +153,7 @@ namespace WpfPlotDigitizer2
 				{
 					return;
 				}
-				setImage(image);
+				SetImage(image);
 			}
 			else
 			{
@@ -149,24 +161,7 @@ namespace WpfPlotDigitizer2
 				return;
 			}
 		}
-		private static BitmapImage source2image(BitmapSource source)
-		{
-			var encoder = new JpegBitmapEncoder();
-			var memoryStream = new MemoryStream();
-			var image = new BitmapImage();
-
-			encoder.Frames.Add(BitmapFrame.Create(source));
-			encoder.Save(memoryStream);
-
-			memoryStream.Position = 0;
-			image.BeginInit();
-			image.StreamSource = memoryStream;
-			image.EndInit();
-
-			memoryStream.Close();
-
-			return image;
-		}
+		
 		private BitmapImage loadImage(string filename)
 		{
 			if (!File.Exists(filename))

@@ -29,17 +29,25 @@ namespace WpfPlotDigitizer2
 			BackCommand = new RelayCommand(GoBack, CanGoBack);
 			NextCommand = new RelayCommand(GoNext, CanGoNext);
 		}
-		public int PageIndex { get; set; } = 0;
-		public Page CurrentPage => PageList[PageIndex];
-		public readonly List<Page> PageList = new List<Page>
+
+		private Model model;
+		public MainWindow(Model model) : this()
 		{
-			new LoadPage(),
-			new Page(),
-		};
+			this.model = model;
+			PageList = new List<Page>
+			{
+				new LoadPage(model),
+				new AxisPage(model),
+			};
+		}
+
+		private int PageIndex { get; set; } = 0;
+		private readonly List<Page> PageList;
+		public Page CurrentPage => PageList[PageIndex];
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public RelayCommand BackCommand { get; set; } 
+		public RelayCommand BackCommand { get; set; }
 		public RelayCommand NextCommand { get; set; }
 		private void GoBack()
 		{

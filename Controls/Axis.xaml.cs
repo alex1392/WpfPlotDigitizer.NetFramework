@@ -89,16 +89,16 @@ namespace WpfPlotDigitizer2
 			typeof(Axis),
 			new PropertyMetadata(default(ImageSource), OnImageSourceChanged));
 
-		public CycInput Input
+		public Inputs Input
 		{
-			get => (CycInput)GetValue(InputProperty);
+			get => (Inputs)GetValue(InputProperty);
 			set => SetValue(InputProperty, value);
 		}
 		public static readonly DependencyProperty InputProperty = DependencyProperty.Register(
 			nameof(Input),
-			typeof(CycInput),
+			typeof(Inputs),
 			typeof(Axis),
-			new PropertyMetadata(new CycInput()));
+			new PropertyMetadata(new Inputs()));
 
 		private static void OnAxisLeftChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
@@ -125,23 +125,23 @@ namespace WpfPlotDigitizer2
 		private static void OnImageSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			var axis = d as Axis;
-			axis.image = axis.ImageSource as BitmapSource;
 			axis.OnPropertyChanged(nameof(AxisRelative));
+			axis.OnPropertyChanged(nameof(Image));
 		}
 		#endregion
 
 		public Thickness AxisMargin => new Thickness(AxisLeft, AxisTop, 0, 0);
 		public Rect AxisRelative => 
-			image == null ? 
+			Image == null ? 
 			new Rect() : 
-			new Rect(AxisLeft / image.PixelWidth, 
-				AxisTop / image.PixelHeight, 
-				AxisWidth / image.PixelWidth, 
-				AxisHeight / image.PixelHeight);
+			new Rect(AxisLeft / Image.PixelWidth, 
+				AxisTop / Image.PixelHeight, 
+				AxisWidth / Image.PixelWidth, 
+				AxisHeight / Image.PixelHeight);
 		public double AxisRight => AxisLeft + AxisWidth;
 		public double AxisBottom => AxisTop + AxisHeight;
 
-		private BitmapSource image;
+		public BitmapSource Image => ImageSource as BitmapSource;
 		private double tol = 10;
 		private bool IsAdjust = false;
 		private AdjustType State = AdjustType.None;
@@ -271,132 +271,6 @@ namespace WpfPlotDigitizer2
 		RightTop = Right | Top,
 		LeftBottom = Left | Bottom,
 		RightBottom = Right | Bottom,
-	}
-
-	[TypeConverter(typeof(CycInputTypeConverter))]
-	public class CycInput
-	{
-		public int? ClickCount { get; set; }
-		public MouseButton? MouseButton { get; set; }
-		public Collection<Key> InputKeys { get; set; } = new Collection<Key>();
-
-		public bool IsEmpty => MouseButton == null && InputKeys.Count == 0 ? 
-			true : false;
-		public bool IsValid(MouseButtonEventArgs e)
-		{
-			// check if there is required mouse button and if the button is pressed
-			return (MouseButton != null && !((MouseButton)MouseButton).IsPressed()) ||
-			  (ClickCount != null && e != null && e.ClickCount != ClickCount) ||
-			// check if there is any required keys and each key is pressed
-			  (InputKeys.Count > 0 && !IsValid(InputKeys)) ? false : true;
-		}
-
-		private bool IsValid(Collection<Key> keys)
-		{
-			return keys.All(key => key.IsPressed());
-		}
-	}
-
-	/// <summary>
-	/// "mouse" and "key" as indicator
-	/// ':' and ';' as starter and finisher
-	/// ',' as seperator
-	/// numbers in "mouse" section is ClickCount
-	/// </summary>
-	/// <example>
-	/// mouse: left, 2; key: leftCtrl, c
-	/// </example>
-	public class CycInputTypeConverter : TypeConverter
-	{
-		public static readonly string mouseStr = "mouse";
-		public static readonly string keyStr = "key";
-
-		private string GetSubStr(string str, int endIndex)
-		{
-			var start = str.IndexOf(':', endIndex);
-			var end = str.IndexOf(';', endIndex);
-			if (start < 0) // if no starter
-				start = endIndex + 1;
-			if (end < 0) // if no finisher
-				end = str.Length;
-			start++; //get rid of ':'
-			return str.Substring(start, end - start);
-		}
-
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-		{
-			var input = new CycInput();
-			var str = value.ToString().ToLower();
-			var mouseStart = str.IndexOf(mouseStr);
-			var keyStart = str.IndexOf(keyStr);
-			if (mouseStart >= 0)
-			{
-				var mouseEnd = mouseStart + mouseStr.Length;
-				var mouseSubStr = GetSubStr(str, mouseEnd);
-				var mouseSubStrs = mouseSubStr.Split(',');
-				var mouseAll = EnumHelpers.GetAll<MouseButton>();
-				foreach (var subStr in mouseSubStrs)
-				{
-					var trimStr = subStr.Trim();
-					if (trimStr.Length == 1 && char.IsDigit(trimStr[0]))
-						input.ClickCount = int.Parse(trimStr);
-					try
-					{
-						input.MouseButton = mouseAll.First(mb => trimStr == mb.ToString().ToLower());
-					}
-					catch (InvalidOperationException) { }//no matched mouse button
-				}
-			}
-
-			if (keyStart >= 0) // if key specified
-			{
-				var keyEnd = keyStart + keyStr.Length;
-				var keySubStr = GetSubStr(str, keyEnd);
-				var keySubStrs = keySubStr.Split(',');
-				var keyAll = EnumHelpers.GetAll<Key>();
-				foreach (var subStr in keySubStrs)
-				{
-					var trimStr = subStr.Trim();
-					var keys = keyAll.Where(key => trimStr == key.ToString().ToLower());
-					foreach (var key in keys)
-					{
-						input.InputKeys.Add(key);
-					}
-				}
-			}
-
-			return input;
-		}
-
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
-		{
-			throw new NotSupportedException();
-		}
-	}
-
-	public static class InputExtensions
-	{
-		public static bool IsPressed(this MouseButton mouseButton)
-		{
-			switch (mouseButton)
-			{
-				case MouseButton.Left:
-					return Mouse.LeftButton == MouseButtonState.Pressed;
-				case MouseButton.Middle:
-					return Mouse.MiddleButton == MouseButtonState.Pressed;
-				case MouseButton.Right:
-					return Mouse.RightButton == MouseButtonState.Pressed;
-				case MouseButton.XButton1:
-					return Mouse.XButton1 == MouseButtonState.Pressed;
-				case MouseButton.XButton2:
-					return Mouse.XButton2 == MouseButtonState.Pressed;
-				default:
-					return false;
-			}
-		}
-
-		public static bool IsEmpty(this Key key) => key == Key.None ? true : false;
-		public static bool IsPressed(this Key key) => Keyboard.GetKeyStates(key).Contain(KeyStates.Down) ? true : false;
 	}
 
 	public static class EnumExtensions
