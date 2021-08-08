@@ -9,7 +9,7 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="AxisPage">
 
-	<Grid>
+	<Grid Margin="5">
 		<Viewbox Name="imageViewBox">
 			<Grid>
 				<Grid local:Pan.IsEnabled="True"

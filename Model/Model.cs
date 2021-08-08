@@ -8,41 +8,48 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.UI;
 using Emgu.CV.Util;
+using Rectangle = System.Drawing.Rectangle;
+using Bitmap = System.Drawing.Bitmap;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
+using System.Windows.Interop;
 
 namespace WpfPlotDigitizer2
 {
-	public class Model : INotifyPropertyChanged
+	public class AppData : INotifyPropertyChanged
 	{
-		public BitmapImage InputImage { get; set; }
+		public BitmapImage InputBitmapImage { get; set; }
 
-		public Rect AxisLocation { get; set; }
+		public Image<Rgba, byte> InputImage { get; set; }
 
 		public Rect AxisLimit { get; set; }
 
 		public double YLogBase { get; set; }
 		public double XLogBase { get; set; }
 
+		public Image<Rgba, byte> CroppedImage { get; set; }
+		public Image<Rgba, byte> FilteredImage { get; set; }
+
 		public event PropertyChangedEventHandler PropertyChanged;
+	}
 
-		public Rect? GetAxisLocation(BitmapImage bitmapImage)
+	public static class Methods
+	{
+		public static Rectangle? GetAxisLocation(Image<Rgba, byte> image)
 		{
-			var bitmap = bitmapImage.ToBitmap();
-			var mat = bitmap.ToMat();
-
 			var gray = new Mat();
-			CvInvoke.CvtColor(mat, gray, ColorConversion.Rgba2Gray);
+			CvInvoke.CvtColor(image, gray, ColorConversion.Rgba2Gray);
 
 			var binary = new Mat();
 			var threshold = CvInvoke.Threshold(gray, binary, 0, 255, ThresholdType.Otsu | ThresholdType.BinaryInv);
 
-			var axis = new Rect();
-			var rectangles = new List<System.Drawing.Rectangle>();
+			var rectangles = new List<Rectangle>();
 			using (var contours = new VectorOfVectorOfPoint())
 			{
 				CvInvoke.FindContours(binary, contours, null, RetrType.List,
@@ -59,7 +66,7 @@ namespace WpfPlotDigitizer2
 				}
 			}
 #if DEBUG
-			var rectanglesImage = new Mat(mat.Size, DepthType.Cv8U, 3);
+			var rectanglesImage = new Mat(image.Size, DepthType.Cv8U, 3);
 			foreach (var rectangle in rectangles)
 			{
 				CvInvoke.Rectangle(rectanglesImage, rectangle, new Bgr(System.Drawing.Color.DarkOrange).MCvScalar);
@@ -67,40 +74,29 @@ namespace WpfPlotDigitizer2
 			//ImageViewer.Show(rectanglesImage);
 #endif
 
-			var filtered = rectangles.Where(r => 
-				r.Width * r.Height > mat.Width * mat.Height * 0.25 && 
-				r.Width * r.Height < mat.Width * mat.Height * 0.9);
+			var filtered = rectangles.Where(r =>
+				r.Width * r.Height > image.Width * image.Height * 0.25 &&
+				r.Width * r.Height < image.Width * image.Height * 0.9);
 			if (!filtered.Any())
 			{
 				return null;
 			}
 			var maxArea = filtered.Max(r => r.Width * r.Height);
-			var axisRect = filtered.First(r => r.Width * r.Height == maxArea);
-			axis = new Rect(axisRect.X, axisRect.Y, axisRect.Width, axisRect.Height);
+			var axis = filtered.First(r => r.Width * r.Height == maxArea);
 			return axis;
 		}
 
-		private bool IsRectangle(VectorOfPoint approxContour)
+		public static Image<Rgba, byte> CropImage(Image<Rgba, byte> image, Rectangle roi)
 		{
-			if (approxContour.Size != 4)
-			{
-				return false;
-			}
-			// determine if all the angles in the contour are within [80, 100] degree
-			bool isRectangle = true;
-			var pts = approxContour.ToArray();
-			var edges = PointCollection.PolyLine(pts, true);
+			return image.ToBitmap().ToImage<Rgba, byte>().Copy(roi);
+		}
 
-			for (int j = 0; j < edges.Length; j++)
-			{
-				double angle = System.Math.Abs(
-					edges[(j + 1) % edges.Length].GetExteriorAngleDegree(edges[j]));
-				if (angle < 80 || angle > 100)
-				{
-					return false;
-				}
-			}
-			return true;
+		public static Image<Rgba, byte> FilterRGB(Image<Rgba, byte> image, Color min, Color max)
+		{
+			var mask = image.InRange(new Rgba(min.R, min.G, min.B, min.A), new Rgba(max.R, max.G, max.B, max.A));
+			image = image.Copy(mask);
+			image.SetValue(new Rgba(255, 0, 0, 0), mask.Not());
+			return image;
 		}
 	}
 
@@ -119,33 +115,43 @@ namespace WpfPlotDigitizer2
 		/// </summary>
 		/// <param name="image">The Emgu CV Image</param>
 		/// <returns>The equivalent BitmapSource</returns>
-		public static BitmapSource ToBitmapSource<TColor, TDepth>(Image<TColor, TDepth> image)
+		public static BitmapSource ToBitmapSource<TColor, TDepth>(this Image<TColor, TDepth> image)
 			where TColor : struct, IColor
 			where TDepth : new()
 		{
-			using (var source = image.ToBitmap())
-			{
-				IntPtr ptr = source.GetHbitmap(); //obtain the Hbitmap
-
-				BitmapSource bs = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-					ptr,
-					IntPtr.Zero,
-					Int32Rect.Empty,
-					System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-
-				DeleteObject(ptr); //release the HBitmap
-				return bs;
-			}
+			// must convert to bgra to retain the transparency
+			return image.Convert<Bgra, byte>().ToBitmap().ToBitmapSource();
 		}
 
-		public static System.Drawing.Bitmap ToBitmap(this BitmapSource source)
+		public static BitmapSource ToBitmapSource(this Bitmap bitmap)
+		{
+			var hBitmap = bitmap.GetHbitmap();
+			BitmapSource source;
+
+			try
+			{
+				source = Imaging.CreateBitmapSourceFromHBitmap(
+							 hBitmap,
+							 IntPtr.Zero,
+							 Int32Rect.Empty,
+							 BitmapSizeOptions.FromEmptyOptions());
+			}
+			finally
+			{
+				DeleteObject(hBitmap);
+			}
+
+			return source;
+		}
+
+		public static Bitmap ToBitmap(this BitmapSource source)
 		{
 			using (var stream = new MemoryStream())
 			{
 				var enc = new PngBitmapEncoder(); // 使用PngEncoder才不會流失透明度
 				enc.Frames.Add(BitmapFrame.Create(source));
 				enc.Save(stream);
-				return new System.Drawing.Bitmap(stream);
+				return new Bitmap(stream);
 			}
 		}
 

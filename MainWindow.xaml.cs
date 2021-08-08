@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace WpfPlotDigitizer2
 {
@@ -28,28 +29,33 @@ namespace WpfPlotDigitizer2
 			DataContext = this;
 			BackCommand = new RelayCommand(GoBack, CanGoBack);
 			NextCommand = new RelayCommand(GoNext, CanGoNext);
+			GoToCommand = new RelayCommand<int>(GoTo, CanGoTo);
 		}
 
-		private Model model;
-		public MainWindow(Model model) : this()
+		private AppData data;
+		public MainWindow(AppData data) : this()
 		{
-			this.model = model;
+			this.data = data;
 			PageList = new List<Page>
 			{
-				new LoadPage(model),
-				new AxisPage(model),
-				new AxisLimitPage(model),
+				new LoadPage(data),
+				new AxisLimitPage(data),
+				new AxisPage(data),
+				new FilterPage(data),
+				new EditPage(data),
+				new PreviewPage(data),
 			};
 		}
 
-		private int PageIndex { get; set; } = 0;
-		private readonly List<Page> PageList;
+		public int PageIndex { get; private set; } = 0;
+		public readonly List<Page> PageList;
 		public Page CurrentPage => PageList[PageIndex];
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		public RelayCommand BackCommand { get; set; }
 		public RelayCommand NextCommand { get; set; }
+		public RelayCommand<int> GoToCommand { get; set; }
 		private void GoBack()
 		{
 			PageIndex--;
@@ -69,6 +75,22 @@ namespace WpfPlotDigitizer2
 		private bool CanGoNext()
 		{
 			return PageIndex < PageList.Count - 1;
+		}
+		private void GoTo(int targetIndex)
+		{
+			while (PageIndex < targetIndex)
+			{
+				// wait for the UI thread to catch up
+				Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => GoNext())).Wait();
+			}
+			while (PageIndex > targetIndex)
+			{
+				Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => GoBack())).Wait();
+			}
+		}
+		private bool CanGoTo(int targetIndex)
+		{
+			return targetIndex >= 0 && targetIndex < PageList.Count;
 		}
 	}
 }

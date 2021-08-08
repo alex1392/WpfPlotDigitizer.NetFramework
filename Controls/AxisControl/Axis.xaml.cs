@@ -8,7 +8,6 @@ using System.Windows.Media.Imaging;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using static WpfPlotDigitizer2.Math;
 
 namespace WpfPlotDigitizer2
 {
@@ -38,7 +37,7 @@ namespace WpfPlotDigitizer2
 		public double AxisLeft
 		{
 			get => (double)GetValue(AxisLeftProperty);
-			set => SetValue(AxisLeftProperty, Clamp(value, AxisRight - tol, 0));
+			set => SetValue(AxisLeftProperty, AxisHelpers.Clamp(value, AxisRight - tol, 0));
 		}
 		public static readonly DependencyProperty AxisLeftProperty = DependencyProperty.Register(
 			nameof(AxisLeft),
@@ -49,7 +48,7 @@ namespace WpfPlotDigitizer2
 		public double AxisTop
 		{
 			get => (double)GetValue(AxisTopProperty);
-			set => SetValue(AxisTopProperty, Clamp(value, AxisBottom - tol, 0));
+			set => SetValue(AxisTopProperty, AxisHelpers.Clamp(value, AxisBottom - tol, 0));
 		}
 		public static readonly DependencyProperty AxisTopProperty = DependencyProperty.Register(
 			nameof(AxisTop),
@@ -60,7 +59,7 @@ namespace WpfPlotDigitizer2
 		public double AxisWidth
 		{
 			get => (double)GetValue(AxisWidthProperty);
-			set => SetValue(AxisWidthProperty, Clamp(value, double.MaxValue, tol));
+			set => SetValue(AxisWidthProperty, AxisHelpers.Clamp(value, double.MaxValue, tol));
 		}
 		public static readonly DependencyProperty AxisWidthProperty = DependencyProperty.Register(
 			nameof(AxisWidth),
@@ -71,7 +70,7 @@ namespace WpfPlotDigitizer2
 		public double AxisHeight
 		{
 			get => (double)GetValue(AxisHeightProperty);
-			set => SetValue(AxisHeightProperty, Clamp(value, double.MaxValue, tol));
+			set => SetValue(AxisHeightProperty, AxisHelpers.Clamp(value, double.MaxValue, tol));
 		}
 		public static readonly DependencyProperty AxisHeightProperty = DependencyProperty.Register(
 			nameof(AxisHeight),
@@ -155,17 +154,17 @@ namespace WpfPlotDigitizer2
 		private AdjustType GetState(Point mousePos)
 		{
 			var state = new AdjustType();
-			if (ApproxEqual(mousePos.X, AxisLeft, tol) &&
-			  IsIn(mousePos.Y, AxisBottom + tol, AxisTop - tol))
+			if (AxisHelpers.ApproxEqual(mousePos.X, AxisLeft, tol) &&
+			  AxisHelpers.IsIn(mousePos.Y, AxisBottom + tol, AxisTop - tol))
 				state = (AdjustType)state.Add(AdjustType.Left);
-			if (ApproxEqual(mousePos.Y, AxisTop, tol) &&
-			  IsIn(mousePos.X, AxisRight + tol, AxisLeft - tol))
+			if (AxisHelpers.ApproxEqual(mousePos.Y, AxisTop, tol) &&
+			  AxisHelpers.IsIn(mousePos.X, AxisRight + tol, AxisLeft - tol))
 				state = (AdjustType)state.Add(AdjustType.Top);
-			if (ApproxEqual(mousePos.X, AxisRight, tol) &&
-			  IsIn(mousePos.Y, AxisBottom + tol, AxisTop - tol))
+			if (AxisHelpers.ApproxEqual(mousePos.X, AxisRight, tol) &&
+			  AxisHelpers.IsIn(mousePos.Y, AxisBottom + tol, AxisTop - tol))
 				state = (AdjustType)state.Add(AdjustType.Right);
-			if (ApproxEqual(mousePos.Y, AxisBottom, tol) &&
-			  IsIn(mousePos.X, AxisRight + tol, AxisLeft - tol))
+			if (AxisHelpers.ApproxEqual(mousePos.Y, AxisBottom, tol) &&
+			  AxisHelpers.IsIn(mousePos.X, AxisRight + tol, AxisLeft - tol))
 				state = (AdjustType)state.Add(AdjustType.Bottom);
 			return state;
 		}
@@ -231,8 +230,8 @@ namespace WpfPlotDigitizer2
 				return;
 			}
 			// avoid mouse go outside the grid
-			if (!(IsIn(mousePos.X, gridMain.ActualWidth, 0) &&
-				  IsIn(mousePos.Y, gridMain.ActualHeight, 0)))
+			if (!(AxisHelpers.IsIn(mousePos.X, gridMain.ActualWidth, 0) &&
+				  AxisHelpers.IsIn(mousePos.Y, gridMain.ActualHeight, 0)))
 				return;
 			// adjust 
 			if (State.Contain(AdjustType.Left))
@@ -273,18 +272,12 @@ namespace WpfPlotDigitizer2
 		RightBottom = Right | Bottom,
 	}
 
-	public static class EnumExtensions
+	public static class AxisHelpers
 	{
 		public static dynamic Add(this Enum enumA, Enum enumB)
 		{
 			var (a, b) = ConvertEnums(enumA, enumB);
 			return a | b;
-		}
-
-		public static dynamic Remove(this Enum enumA, Enum enumB)
-		{
-			var (a, b) = ConvertEnums(enumA, enumB);
-			return a & ~b;
 		}
 
 		public static bool Contain(this Enum enumA, Enum enumB)
@@ -293,39 +286,8 @@ namespace WpfPlotDigitizer2
 			return (a & b) == b;
 		}
 
-		public static bool GreaterThan(this Enum enumA, Enum enumB)
-		{
-			var (a, b) = ConvertEnums(enumA, enumB);
-			return a > b;
-		}
-
-		public static bool LessThan(this Enum enumA, Enum enumB)
-		{
-			var (a, b) = ConvertEnums(enumA, enumB);
-			return a < b;
-		}
-
-		public static int Count(this Enum @enum) => Enum.GetValues(@enum.GetType()).Length;
-
-		#region Helper
-		private static void CheckType(Enum enumA, Enum enumB)
-		{
-			if (enumA.GetType() != enumB.GetType())
-				throw new ArgumentException("Type Mismatch");
-		}
 		private static (ulong a, ulong b) ConvertEnums(Enum enumA, Enum enumB) => (Convert.ToUInt64(enumA), Convert.ToUInt64(enumB));
-		#endregion
-	}
-
-	public static class EnumHelpers
-	{
-		public static int Count<T>() => Enum.GetValues(typeof(T)).Length;
-
-		public static T[] GetAll<T>() => Enum.GetValues(typeof(T)).Cast<T>().ToArray();
-	}
-
-	public static class Math
-	{
+	
 		public static double Clamp(double value, double Max, double Min)
 		{
 			if (Min > Max)
@@ -340,7 +302,6 @@ namespace WpfPlotDigitizer2
 		}
 
 		public static void Swap<T>(ref T x, ref T y) => (x, y) = (y, x);
-
 		/// <summary>
 		/// 判斷<paramref name="value"/>是否位於閉區間[<paramref name="Max"/>,<paramref name="Min"/>]中。<paramref name="excludeBoundary"/>為真時，改為判斷開區間(<paramref name="Max"/>,<paramref name="Min"/>)。
 		/// </summary>
@@ -352,15 +313,6 @@ namespace WpfPlotDigitizer2
 				return (value <= Max && value >= Min) ? true : false;
 			else
 				return (value < Max && value > Min) ? true : false;
-		}
-
-		public static bool IsIn(double value, double Max, double Min, bool excludeMax, bool excludeMin)
-		{
-			if (Min > Max)
-				Swap(ref Max, ref Min);
-			var inMax = excludeMax ? value < Max : value <= Max;
-			var inMin = excludeMin ? value > Min : value >= Min;
-			return inMax && inMin;
 		}
 
 		/// <summary>

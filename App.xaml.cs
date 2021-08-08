@@ -17,11 +17,16 @@ namespace WpfPlotDigitizer2
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
-			var model = new Model();
+			var model = new AppData();
 			var mainWindow = new MainWindow(model);
 			mainWindow.Show();
 #if DEBUG
 			(mainWindow.CurrentPage as LoadPage).SetImage(new BitmapImage(new Uri(@"C:\Users\alex\Desktop\Coding\WpfPlotDigitizer2\images\data.png")));
+			var filterPageIndex = mainWindow.PageList.FindIndex(p => p is FilterPage);
+			if (mainWindow.GoToCommand.CanExecute(filterPageIndex))
+			{
+				mainWindow.GoToCommand.Execute(filterPageIndex);
+			}
 #endif
 		}
 	}

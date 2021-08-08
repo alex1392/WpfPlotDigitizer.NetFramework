@@ -1,4 +1,6 @@
-﻿using Microsoft.Win32;
+﻿using Emgu.CV;
+using Emgu.CV.Structure;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,16 +24,29 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class LoadPage : Page
 	{
-		private Model model;
+		private AppData data;
 
 		public LoadPage()
 		{
 			InitializeComponent();
 		}
 
-		public LoadPage(Model model) : this()
+		public LoadPage(AppData data) : this()
 		{
-			this.model = model;
+			this.data = data;
+		}
+		public void SetImage(BitmapImage image)
+		{
+			data.InputBitmapImage = image;
+			data.InputImage = image.ToBitmap().ToImage<Rgba, byte>();
+#if DEBUG
+			this.image.Source = image;
+#endif
+			var mainWindow = Application.Current.MainWindow as MainWindow;
+			if (mainWindow.NextCommand.CanExecute(null))
+			{
+				mainWindow.NextCommand.Execute(null);
+			}
 		}
 
 		private void browseButton_Loaded(object sender, RoutedEventArgs e)
@@ -123,18 +138,6 @@ namespace WpfPlotDigitizer2
 				return;
 			}
 			SetImage(image);
-		}
-		public void SetImage(BitmapImage image)
-		{
-			model.InputImage = image;
-#if DEBUG
-			this.image.Source = image;
-#endif
-			var mainWindow = Application.Current.MainWindow as MainWindow;
-			if (mainWindow.NextCommand.CanExecute(null))
-			{
-				mainWindow.NextCommand.Execute(null);
-			}
 		}
 		private void pasteImage()
 		{

@@ -55,9 +55,25 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Controls\Axis.xaml">
+    <Page Include="Controls\AxisControl\Axis.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\RangeSlider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\ImageViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\EditPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\FilterPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\AxisLimitPage.xaml">
       <SubType>Designer</SubType>
@@ -79,11 +95,21 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controls\Inputs.cs" />
-    <Compile Include="Controls\Pan.cs" />
-    <Compile Include="Controls\Zoom.cs" />
-    <Compile Include="Controls\Axis.xaml.cs">
+    <Compile Include="Controls\AxisControl\Inputs.cs" />
+    <Compile Include="Controls\AxisControl\InputsTypeConverter.cs" />
+    <Compile Include="Controls\AxisControl\PanZoom.cs" />
+    <Compile Include="Controls\RangeSlider.cs" />
+    <Compile Include="Controls\AxisControl\Axis.xaml.cs">
       <DependentUpon>Axis.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ImageViewer.xaml.cs">
+      <DependentUpon>ImageViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\EditPage.xaml.cs">
+      <DependentUpon>EditPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\FilterPage.xaml.cs">
+      <DependentUpon>FilterPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\AxisLimitPage.xaml.cs">
       <DependentUpon>AxisLimitPage.xaml</DependentUpon>
@@ -98,9 +124,20 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Pages\PreviewPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Model.cs" />
+    <Compile Include="Pages\PreviewPage.xaml.cs">
+      <DependentUpon>PreviewPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -144,9 +181,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf">
-      <Version>1.1.31</Version>
-    </PackageReference>
     <PackageReference Include="MvvmLightLibs">
       <Version>5.4.1.1</Version>
     </PackageReference>
@@ -161,7 +195,7 @@
     <Resource Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Controls\pan.cur" />
+    <Resource Include="Controls\AxisControl\pan.cur" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

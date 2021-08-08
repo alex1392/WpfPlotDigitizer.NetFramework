@@ -21,26 +21,37 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class AxisLimitPage : Page, INotifyPropertyChanged
 	{
-		private Model model;
+		private AppData data;
 
 		public AxisLimitPage()
 		{
 			InitializeComponent();
 			DataContext = this;
-			this.Unloaded += AxisLimitPage_Unloaded;
+			Loaded += AxisLimitPage_Loaded;
+			Unloaded += AxisLimitPage_Unloaded;
+		}
+
+		private void AxisLimitPage_Loaded(object sender, RoutedEventArgs e)
+		{
+			ImageSource = data.InputBitmapImage;
 		}
 
 		private void AxisLimitPage_Unloaded(object sender, RoutedEventArgs e)
 		{
-			if (!double.TryParse(YMax, out var ymax) ||
-				!double.TryParse(YMin, out var ymin) ||
-				!double.TryParse(XMax, out var xmax) ||
-				!double.TryParse(XMin, out var xmin))
+			double ymax = 0, ymin = 0, xmax = 0, xmin = 0;
+			if (!string.IsNullOrEmpty(YMax) && 
+				!double.TryParse(YMax, out ymax) ||
+				!string.IsNullOrEmpty(YMin) &&
+				!double.TryParse(YMin, out ymin) ||
+				!string.IsNullOrEmpty(XMax) &&
+				!double.TryParse(XMax, out xmax) ||
+				!string.IsNullOrEmpty(XMin) &&
+				!double.TryParse(XMin, out xmin))
 			{
 				MessageBox.Show("Cannot parse axis limit, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
 			}
-			model.AxisLimit = new Rect(new Point(xmin, ymin), new Point(xmax, ymax));
+			data.AxisLimit = new Rect(new Point(xmin, ymin), new Point(xmax, ymax));
 			double ylog = 0, xlog = 0;
 			if (!string.IsNullOrEmpty(YLog) &&
 				!double.TryParse(YLog, out ylog) ||
@@ -50,20 +61,16 @@ namespace WpfPlotDigitizer2
 				MessageBox.Show("Cannot parse axis log base, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
 			}
-			model.YLogBase = ylog;
-			model.XLogBase = xlog;
+			data.YLogBase = ylog;
+			data.XLogBase = xlog;
 		}
 
-		public AxisLimitPage(Model model) : this()
+		public AxisLimitPage(AppData data) : this()
 		{
-			this.model = model;
-			model.PropertyChanged += (sender, e) =>
-			{
-				OnPropertyChanged(nameof(ImageSource));
-			};
+			this.data = data;
 		}
 
-		public ImageSource ImageSource => model.InputImage;
+		public ImageSource ImageSource { get; private set; }
 
 		public string YMax { get; set; }
 		public string YLog { get; set; }
@@ -73,9 +80,5 @@ namespace WpfPlotDigitizer2
 		public string XMin { get; set; }
 
 		public event PropertyChangedEventHandler PropertyChanged;
-		protected void OnPropertyChanged(string propertyName)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
 	}
 }
