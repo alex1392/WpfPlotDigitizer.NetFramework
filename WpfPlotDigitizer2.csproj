@@ -55,7 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Controls\AxisControl\Axis.xaml">
+    <Page Include="Controls\Axis\Axis.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -95,16 +95,20 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controls\AxisControl\Inputs.cs" />
-    <Compile Include="Controls\AxisControl\InputsTypeConverter.cs" />
-    <Compile Include="Controls\AxisControl\PanZoom.cs" />
+    <Compile Include="Controls\Axis\Inputs.cs" />
+    <Compile Include="Controls\Axis\InputsTypeConverter.cs" />
+    <Compile Include="Controls\Axis\PanZoom.cs" />
     <Compile Include="Controls\RangeSlider.cs" />
-    <Compile Include="Controls\AxisControl\Axis.xaml.cs">
+    <Compile Include="Controls\Axis\Axis.xaml.cs">
       <DependentUpon>Axis.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ImageViewer.xaml.cs">
       <DependentUpon>ImageViewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\UndoRedo\ComboBoxTemplateSelector.cs" />
+    <Compile Include="Controls\UndoRedo\EditManager.cs" />
+    <Compile Include="Model\PageManager.cs" />
+    <Compile Include="Converters\VisibilityConverter.cs" />
     <Compile Include="Pages\EditPage.xaml.cs">
       <DependentUpon>EditPage.xaml</DependentUpon>
     </Compile>
@@ -195,7 +199,7 @@
     <Resource Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Controls\AxisControl\pan.cur" />
+    <Resource Include="Controls\Axis\pan.cur" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

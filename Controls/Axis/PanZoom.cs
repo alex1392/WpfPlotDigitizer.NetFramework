@@ -50,7 +50,7 @@ namespace WpfPlotDigitizer2
 			=> obj.SetValue(ClipToParentProperty, value);
 		#endregion
 
-		private static readonly Cursor panCursor = new Uri(@"/Controls/AxisControl/pan.cur", UriKind.Relative).ToCursor();
+		private static readonly Cursor panCursor = new Uri(@"/Controls/Axis/pan.cur", UriKind.Relative).ToCursor();
 		private static Cursor ToCursor(this Uri uri) => new Cursor(Application.GetResourceStream(uri).Stream);
 		private static Cursor cursorCache;
 		private static Point mouseAnchor;
@@ -182,10 +182,6 @@ namespace WpfPlotDigitizer2
 				element.EnsureTransforms();
 				element.RenderTransformOrigin = new Point(0, 0);
 				element.Parent.SetValue(UIElement.ClipToBoundsProperty, true);
-				if (element.Parent is Panel parent)
-					parent.Background = CrossboardBrush;
-				else if (element.Parent is Border border)
-					border.Background = CrossboardBrush;
 			}
 			else
 			{
@@ -193,18 +189,6 @@ namespace WpfPlotDigitizer2
 				element.MouseLeave -= Element_MouseLeave;
 			}
 		}
-
-		private static DrawingBrush CrossboardBrush { get; } = new DrawingBrush
-		{
-			TileMode = TileMode.Tile,
-			Viewport = new Rect(0, 0, 32, 32),
-			ViewportUnits = BrushMappingMode.Absolute,
-			Drawing = new GeometryDrawing
-			{
-				Brush = Brushes.LightGray,
-				Geometry = Geometry.Parse("M0,0 H16 V16 H32 V32 H16 V16 H0Z"),
-			}
-		};
 
 		private static double LeaveTime = 1;
 		private static double WheelTime = 0.1;

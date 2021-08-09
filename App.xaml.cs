@@ -21,11 +21,11 @@ namespace WpfPlotDigitizer2
 			var mainWindow = new MainWindow(model);
 			mainWindow.Show();
 #if DEBUG
-			(mainWindow.CurrentPage as LoadPage).SetImage(new BitmapImage(new Uri(@"C:\Users\alex\Desktop\Coding\WpfPlotDigitizer2\images\data.png")));
-			var filterPageIndex = mainWindow.PageList.FindIndex(p => p is FilterPage);
-			if (mainWindow.GoToCommand.CanExecute(filterPageIndex))
+			(mainWindow.PageManager.CurrentPage as LoadPage).SetImage(new BitmapImage(new Uri(@"C:\Users\alex\Desktop\Coding\WpfPlotDigitizer2\images\data.png")));
+			var targetIndex = mainWindow.PageManager.PageList.FindIndex(p => p is EditPage);
+			if (mainWindow.PageManager.GoToCommand.CanExecute(targetIndex))
 			{
-				mainWindow.GoToCommand.Execute(filterPageIndex);
+				mainWindow.PageManager.GoToCommand.Execute(targetIndex);
 			}
 #endif
 		}

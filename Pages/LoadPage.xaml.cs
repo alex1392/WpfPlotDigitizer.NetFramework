@@ -43,9 +43,9 @@ namespace WpfPlotDigitizer2
 			this.image.Source = image;
 #endif
 			var mainWindow = Application.Current.MainWindow as MainWindow;
-			if (mainWindow.NextCommand.CanExecute(null))
+			if (mainWindow.PageManager.NextCommand.CanExecute(null))
 			{
-				mainWindow.NextCommand.Execute(null);
+				mainWindow.PageManager.NextCommand.Execute(null);
 			}
 		}
 

@@ -18,6 +18,7 @@ using Emgu.CV.Util;
 using Rectangle = System.Drawing.Rectangle;
 using Bitmap = System.Drawing.Bitmap;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
+using ImageViewer = Emgu.CV.UI.ImageViewer;
 using System.Windows.Interop;
 
 namespace WpfPlotDigitizer2
@@ -35,6 +36,7 @@ namespace WpfPlotDigitizer2
 
 		public Image<Rgba, byte> CroppedImage { get; set; }
 		public Image<Rgba, byte> FilteredImage { get; set; }
+		public Image<Rgba, byte> EdittedImage { get; set; }
 
 		public event PropertyChangedEventHandler PropertyChanged;
 	}
