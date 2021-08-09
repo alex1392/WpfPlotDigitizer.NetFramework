@@ -20,7 +20,7 @@
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top"
 								Orientation="Horizontal"
-								Height="20">
+								Height="30">
 			<StackPanel.Resources>
 				<Style TargetType="Button">
 					<Setter Property="Width"

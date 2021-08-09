@@ -100,6 +100,11 @@ namespace WpfPlotDigitizer2
 			image.SetValue(new Rgba(255, 0, 0, 0), mask.Not());
 			return image;
 		}
+
+		public static void EraseImage(Image<Rgba, byte> image, Rectangle rect)
+		{
+			CvInvoke.Rectangle(image, rect, new Rgba().MCvScalar, -1);
+		}
 	}
 
 	public static class ImageConverter

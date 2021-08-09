@@ -167,6 +167,13 @@ namespace WpfPlotDigitizer2
 		  => (double)element.GetValue(MaximumProperty);
 		public static void SetMaximum(UIElement element, double value)
 		  => element.SetValue(MaximumProperty, value);
+
+
+		public static readonly DependencyProperty MouseWheelProperty =
+			DependencyProperty.RegisterAttached("MouseWheel", typeof(EventHandler<double>), typeof(Zoom), new PropertyMetadata(null));
+		public static EventHandler<double> GetMouseWheel(DependencyObject obj) => (EventHandler<double>)obj.GetValue(MouseWheelProperty);
+		public static void SetMouseWheel(DependencyObject obj, EventHandler<double> value) => obj.SetValue(MouseWheelProperty, value);
+
 		#endregion
 
 		private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -207,7 +214,6 @@ namespace WpfPlotDigitizer2
 		private static void Element_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
 			var element = sender as FrameworkElement;
-			var parent = element.Parent as FrameworkElement;
 			var transforms = (element.RenderTransform as TransformGroup).Children;
 			var translate = transforms.GetTranslate();
 			var scale = transforms.GetScale();
@@ -221,11 +227,13 @@ namespace WpfPlotDigitizer2
 			var ToScale = PanZoomHelpers.Clamp(scale.ScaleX + zoom, GetMaximum(element), 1);
 			var ToX = PanZoomHelpers.Clamp(absolute.X - relative.X * ToScale, 0, element.ActualWidth * (1 - ToScale));
 			var ToY = PanZoomHelpers.Clamp(absolute.Y - relative.Y * ToScale, 0, element.ActualHeight * (1 - ToScale));
+
 			scale.BeginAnimation(ScaleTransform.ScaleXProperty, ToScale, WheelTime);
 			scale.BeginAnimation(ScaleTransform.ScaleYProperty, ToScale, WheelTime);
 			translate.BeginAnimation(TranslateTransform.XProperty, ToX, WheelTime);
 			translate.BeginAnimation(TranslateTransform.YProperty, ToY, WheelTime);
 
+			GetMouseWheel(element).Invoke(element, ToScale);
 		}
 		private static void OnMaximumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{

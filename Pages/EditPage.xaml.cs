@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Rectangle = System.Drawing.Rectangle;
 
 namespace WpfPlotDigitizer2
 {
@@ -27,6 +29,18 @@ namespace WpfPlotDigitizer2
 	{
 		private AppData data;
 		private EditState editState;
+		private Point mouseDownPos;
+		private bool isMoving;
+		private readonly double eraserOriginalSize;
+		private readonly double eraserOriginalBorderThickness;
+		private readonly Stopwatch stopwatch = new Stopwatch();
+		private readonly Dictionary<EditState, bool> isEditting = new Dictionary<EditState, bool>
+		{
+			{ EditState.Eraser, false },
+			{ EditState.Rectangle, false },
+			{ EditState.Polygon, false },
+		};
+		private readonly int fps = 24;
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
@@ -36,6 +50,9 @@ namespace WpfPlotDigitizer2
 			DataContext = this;
 			Loaded += EditPage_Loaded;
 			Unloaded += EditPage_Unloaded;
+
+			eraserOriginalSize = eraserRect.Width;
+			eraserOriginalBorderThickness = eraserRect.StrokeThickness;
 		}
 
 		public EditPage(AppData data) : this()
@@ -71,8 +88,13 @@ namespace WpfPlotDigitizer2
 			}
 		}
 
-		// need to update when undo/redo
 		public Image<Rgba, byte> Image { get; private set; }
+
+		public void PanZoomGrid_MouseWheel(object sender, double scale)
+		{
+			eraserRect.Width = eraserOriginalSize / scale;
+			eraserRect.StrokeThickness = eraserOriginalBorderThickness / scale;
+		}
 
 		private void OnPropertyChanged(string propertyName)
 		{
@@ -80,14 +102,12 @@ namespace WpfPlotDigitizer2
 		}
 		private void EditManager_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(EditManager.Index))
-			{
+			if (e.PropertyName == nameof(EditManager.Index)) {
 				OnPropertyChanged(nameof(UndoList));
 				OnPropertyChanged(nameof(RedoList));
 				UndoComboBox.SelectedIndex = 0;
 				RedoComboBox.SelectedIndex = 0;
 				Image = EditManager.CurrentObject.Copy();
-				OnPropertyChanged(nameof(ImageSource));
 			}
 		}
 		private void EditPage_Loaded(object sender, RoutedEventArgs e)
@@ -153,35 +173,32 @@ namespace WpfPlotDigitizer2
 			RedoComboBox.SelectedIndex = 0;
 		}
 
-		private Point mouseDownPos;
-		private bool isMoving;
-		private readonly Dictionary<EditState, bool> isEditting = new Dictionary<EditState, bool>
+		private void editCanvas_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			{ EditState.Eraser, false },
-			{ EditState.Rectangle, false },
-			{ EditState.Polygon, false },
-		};
-		private void selectCanvas_MouseDown(object sender, MouseButtonEventArgs e)
-		{
-			if (editState == EditState.Rectangle)
-			{
-				mouseDownPos = e.GetPosition(selectCanvas);
+			if (editState == EditState.Rectangle) {
+				mouseDownPos = e.GetPosition(editCanvas);
 				Canvas.SetLeft(selectRect, mouseDownPos.X);
 				Canvas.SetTop(selectRect, mouseDownPos.Y);
 				selectRect.Width = 0;
 				selectRect.Height = 0;
 				selectRect.Visibility = Visibility.Visible;
+				selectRect.Focus();
 
 				isEditting[EditState.Rectangle] = true;
 			}
-			else if (editState == EditState.Polygon)
-			{
+			else if (editState == EditState.Polygon) {
 
 				isEditting[EditState.Polygon] = true;
 			}
+			else if (editState == EditState.Eraser) {
+				eraserRect.Visibility = Visibility.Visible;
+				isEditting[EditState.Eraser] = true;
+				stopwatch.Restart();
+				editCanvas_MouseMove(sender, e);
+			}
 		}
 
-		private void selectCanvas_MouseMove(object sender, MouseEventArgs e)
+		private void editCanvas_MouseMove(object sender, MouseEventArgs e)
 		{
 			if (!isEditting.ContainsKey(editState) ||
 				!isEditting[editState] ||
@@ -189,9 +206,8 @@ namespace WpfPlotDigitizer2
 				return;
 			isMoving = true;
 
-			var position = e.GetPosition(selectCanvas);
-			if (editState == EditState.Rectangle)
-			{
+			if (editState == EditState.Rectangle) {
+				var position = e.GetPosition(editCanvas);
 				var dx = position.X - mouseDownPos.X;
 				if (dx < 0)
 					Canvas.SetLeft(selectRect, position.X);
@@ -206,63 +222,60 @@ namespace WpfPlotDigitizer2
 					Canvas.SetTop(selectRect, mouseDownPos.Y);
 				selectRect.Height = Math.Abs(dy);
 			}
-			else if (editState == EditState.Polygon)
-			{
+			else if (editState == EditState.Polygon) {
 
+			}
+			else if (editState == EditState.Eraser) {
+				var centre = e.GetPosition(editCanvas);
+				var size = new Vector(eraserRect.Width, eraserRect.Height);
+				var position = centre - size / 2;
+				Canvas.SetLeft(eraserRect, position.X);
+				Canvas.SetTop(eraserRect, position.Y);
+				var rect = new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y);
+				Methods.EraseImage(Image, rect);
+				// update the image by "N" frames per second
+				if (stopwatch.ElapsedMilliseconds > 1000 / fps) {
+					OnPropertyChanged(nameof(ImageSource));
+					stopwatch.Restart();
+				}
 			}
 
 			isMoving = false;
 		}
 
-		private void selectCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+		private void editCanvas_MouseUp(object sender, MouseButtonEventArgs e)
 		{
+			if (editState == EditState.Eraser) {
+				eraserRect.Visibility = Visibility.Hidden;
+
+				var image = Image.Copy(); // save a copy to editManager
+				if (EditManager.EditCommand.CanExecute((image, "erase image")))
+					EditManager.EditCommand.Execute((image, "erase image"));
+			}
+
 			isEditting[editState] = false;
 		}
 
-
-		private void eraserCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+		private void selectRect_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (editState != EditState.Eraser)
+			if (editState != EditState.Rectangle ||
+				selectRect.Visibility != Visibility.Visible) {
 				return;
-			eraserRect.Visibility = Visibility.Visible;
-			isEditting[EditState.Eraser] = true;
-			eraserCanvas_MouseMove(sender, e);
+			}
+			if (e.Key == Key.Back || e.Key == Key.Delete) {
+				var left = Canvas.GetLeft(selectRect);
+				var top = Canvas.GetTop(selectRect);
+				var rect = new Rectangle((int)left, (int)top, (int)selectRect.Width, (int)selectRect.Height);
+				Methods.EraseImage(Image, rect);
+				var image = Image.Copy();
+				if (EditManager.EditCommand.CanExecute((image, "Delete rectangle region"))) {
+					EditManager.EditCommand.Execute((image, "Delete rectangle region"));
+				}
+				selectRect.Visibility = Visibility.Hidden;
+			}
+
+			e.Handled = true;			
 		}
-
-		private void eraserCanvas_MouseMove(object sender, MouseEventArgs e)
-		{
-			if (editState != EditState.Eraser ||
-				!isEditting[EditState.Eraser] ||
-				isMoving)
-				return;
-			isMoving = true;
-
-			var centre = e.GetPosition(eraserCanvas);
-			var size = new Vector(eraserRect.Width, eraserRect.Height);
-			var position = centre - size / 2;
-			Canvas.SetLeft(eraserRect, position.X);
-			Canvas.SetTop(eraserRect, position.Y);
-			var rect = new System.Drawing.Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y);
-			// erase image
-			CvInvoke.Rectangle(Image, rect, new Rgba().MCvScalar, -1);
-			OnPropertyChanged(nameof(ImageSource));
-
-			isMoving = false;
-		}
-
-		private void eraserCanvas_MouseUp(object sender, MouseButtonEventArgs e)
-		{
-			if (editState != EditState.Eraser)
-				return;
-			isEditting[editState] = false;
-			eraserRect.Visibility = Visibility.Hidden;
-
-			// save a copy to editManager
-			var image = Image.Copy();
-			if (EditManager.EditCommand.CanExecute((image, "erase image")))
-				EditManager.EditCommand.Execute((image, "erase image"));
-		}
-
 	}
 
 	public enum EditState
