@@ -233,7 +233,7 @@ namespace WpfPlotDigitizer2
 			translate.BeginAnimation(TranslateTransform.XProperty, ToX, WheelTime);
 			translate.BeginAnimation(TranslateTransform.YProperty, ToY, WheelTime);
 
-			GetMouseWheel(element).Invoke(element, ToScale);
+			GetMouseWheel(element)?.Invoke(element, ToScale);
 		}
 		private static void OnMaximumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{

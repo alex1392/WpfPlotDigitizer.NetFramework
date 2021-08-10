@@ -24,14 +24,14 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class LoadPage : Page
 	{
-		private AppData data;
+		private Model data;
 
 		public LoadPage()
 		{
 			InitializeComponent();
 		}
 
-		public LoadPage(AppData data) : this()
+		public LoadPage(Model data) : this()
 		{
 			this.data = data;
 		}

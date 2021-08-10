@@ -24,7 +24,7 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class AxisPage : Page, INotifyPropertyChanged
 	{
-		private AppData data;
+		private Model data;
 
 		public AxisPage()
 		{
@@ -46,7 +46,7 @@ namespace WpfPlotDigitizer2
 			data.CroppedImage = Methods.CropImage(data.InputImage, axisLocation);
 		}
 
-		public AxisPage(AppData data) : this()
+		public AxisPage(Model data) : this()
 		{
 			this.data = data;
 			data.PropertyChanged += (sender, e) =>

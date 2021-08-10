@@ -29,9 +29,9 @@ namespace WpfPlotDigitizer2
 			DataContext = this;
 		}
 
-		private readonly AppData data;
+		private readonly Model data;
 
-		public MainWindow(AppData data) : this()
+		public MainWindow(Model data) : this()
 		{
 			this.data = data;
 			var pageList = new List<Page>
@@ -52,5 +52,13 @@ namespace WpfPlotDigitizer2
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
+		private void mainFrame_Navigating(object sender, NavigatingCancelEventArgs e)
+		{
+			// disable frame navigation to prevent keyboard input conflict
+			if (e.NavigationMode == NavigationMode.Back ||
+				e.NavigationMode == NavigationMode.Forward) {
+				e.Cancel = true;
+			}
+		}
 	}
 }

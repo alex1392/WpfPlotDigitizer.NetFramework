@@ -10,17 +10,15 @@
 			Title="EditPage"
 			d:DataContext="{d:DesignInstance local:EditPage, IsDesignTimeCreatable=True}">
 	<Page.Resources>
-
 		<DataTemplate x:Key="SelectionBoxTemplate" />
-
 		<local:ComboBoxTemplateSelector x:Key="ComboBoxTemplateSelector"
 																		SelectedItemTemplate="{StaticResource SelectionBoxTemplate}" />
-
 	</Page.Resources>
 	<DockPanel>
 		<StackPanel Orientation="Horizontal" 
 								DockPanel.Dock="Top"
-								Height="30">
+								Height="30"
+								Background="{StaticResource ToolBarColorBrush}">
 			<StackPanel.Resources>
 				<Style TargetType="Button">
 					<Setter Property="Width"
@@ -119,8 +117,12 @@
 				</ToggleButton>
 			</StackPanel>
 		</StackPanel>
-		<Grid>
-			<Viewbox>
+		<Grid x:Name="mainGrid" 
+					Background="Transparent"
+					MouseDown="mainGrid_MouseDown"
+					MouseMove="mainGrid_MouseMove"
+					MouseUp="mainGrid_MouseUp">
+			<Viewbox Margin="20">
 				<Grid>
 					<Grid.Background>
 						<DrawingBrush TileMode="Tile"
@@ -143,9 +145,7 @@
 									 Source="{Binding ImageSource}" />
 						<Canvas Name="editCanvas"
 										Background="Transparent"
-										MouseDown="editCanvas_MouseDown"
-										MouseMove="editCanvas_MouseMove"
-										MouseUp="editCanvas_MouseUp">
+										ToolTip="Right click to erase image and select region, press delete/backspace to delete a region.">
 							<Rectangle Name="selectRect"
 												 Stroke="Red"
 												 StrokeThickness="2"

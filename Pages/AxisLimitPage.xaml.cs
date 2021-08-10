@@ -21,7 +21,7 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class AxisLimitPage : Page, INotifyPropertyChanged
 	{
-		private AppData data;
+		private Model data;
 
 		public AxisLimitPage()
 		{
@@ -61,11 +61,10 @@ namespace WpfPlotDigitizer2
 				MessageBox.Show("Cannot parse axis log base, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
 			}
-			data.YLogBase = ylog;
-			data.XLogBase = xlog;
+			data.AxisLogBase = new Point(xlog, ylog);
 		}
 
-		public AxisLimitPage(AppData data) : this()
+		public AxisLimitPage(Model data) : this()
 		{
 			this.data = data;
 		}

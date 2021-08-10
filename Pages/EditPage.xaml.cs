@@ -27,7 +27,7 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class EditPage : Page, INotifyPropertyChanged
 	{
-		private AppData data;
+		private Model model;
 		private EditState editState;
 		private Point mouseDownPos;
 		private bool isMoving;
@@ -55,9 +55,9 @@ namespace WpfPlotDigitizer2
 			eraserOriginalBorderThickness = eraserRect.StrokeThickness;
 		}
 
-		public EditPage(AppData data) : this()
+		public EditPage(Model model) : this()
 		{
-			this.data = data;
+			this.model = model;
 		}
 		public EditManager<Image<Rgba, byte>> EditManager { get; private set; }
 		public ImageSource ImageSource => Image?.ToBitmapSource();
@@ -76,26 +76,20 @@ namespace WpfPlotDigitizer2
 			}
 		}
 
-		public EditState EditState
-		{
-			get => editState;
-			set
-			{
-				editState = value;
-				var canPanZoom = editState == EditState.None;
-				Pan.SetIsEnabled(PanZoomGrid, canPanZoom);
-				Zoom.SetIsEnabled(PanZoomGrid, canPanZoom);
-			}
-		}
-
 		public Image<Rgba, byte> Image { get; private set; }
 
-		public void PanZoomGrid_MouseWheel(object sender, double scale)
+
+		private void EditPage_Loaded(object sender, RoutedEventArgs e)
 		{
-			eraserRect.Width = eraserOriginalSize / scale;
-			eraserRect.StrokeThickness = eraserOriginalBorderThickness / scale;
+			Image = model.FilteredImage;
+			EditManager = new EditManager<Image<Rgba, byte>>(Image.Copy());
+			EditManager.PropertyChanged += EditManager_PropertyChanged;
 		}
 
+		private void EditPage_Unloaded(object sender, RoutedEventArgs e)
+		{
+			model.EdittedImage = Image;
+		}
 		private void OnPropertyChanged(string propertyName)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -110,42 +104,31 @@ namespace WpfPlotDigitizer2
 				Image = EditManager.CurrentObject.Copy();
 			}
 		}
-		private void EditPage_Loaded(object sender, RoutedEventArgs e)
-		{
-			Image = data.FilteredImage;
-			EditManager = new EditManager<Image<Rgba, byte>>(Image.Copy());
-			EditManager.PropertyChanged += EditManager_PropertyChanged;
-		}
-
-		private void EditPage_Unloaded(object sender, RoutedEventArgs e)
-		{
-			data.EdittedImage = Image;
-		}
 
 		private void EraserButton_Checked(object sender, RoutedEventArgs e)
 		{
 			RectButton.IsChecked = false;
 			PolyButton.IsChecked = false;
-			EditState = EditState.Eraser;
+			editState = EditState.Eraser;
 		}
 
 		private void RectButton_Checked(object sender, RoutedEventArgs e)
 		{
 			EraserButton.IsChecked = false;
 			PolyButton.IsChecked = false;
-			EditState = EditState.Rectangle;
+			editState = EditState.Rectangle;
 		}
 
 		private void PolyButton_Checked(object sender, RoutedEventArgs e)
 		{
 			RectButton.IsChecked = false;
 			EraserButton.IsChecked = false;
-			EditState = EditState.Polygon;
+			editState = EditState.Polygon;
 		}
 
 		private void StateButton_Unchecked(object sender, RoutedEventArgs e)
 		{
-			EditState = EditState.None;
+			editState = EditState.None;
 			selectRect.Visibility = Visibility.Hidden;
 		}
 
@@ -173,8 +156,12 @@ namespace WpfPlotDigitizer2
 			RedoComboBox.SelectedIndex = 0;
 		}
 
-		private void editCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+		private void mainGrid_MouseDown(object sender, MouseButtonEventArgs e)
 		{
+			if (editState == EditState.None ||
+				e.ChangedButton != MouseButton.Right) {
+				return;
+			}
 			if (editState == EditState.Rectangle) {
 				mouseDownPos = e.GetPosition(editCanvas);
 				Canvas.SetLeft(selectRect, mouseDownPos.X);
@@ -184,21 +171,21 @@ namespace WpfPlotDigitizer2
 				selectRect.Visibility = Visibility.Visible;
 				selectRect.Focus();
 
-				isEditting[EditState.Rectangle] = true;
+				isEditting[editState] = true;
 			}
 			else if (editState == EditState.Polygon) {
 
-				isEditting[EditState.Polygon] = true;
+				isEditting[editState] = true;
 			}
 			else if (editState == EditState.Eraser) {
 				eraserRect.Visibility = Visibility.Visible;
-				isEditting[EditState.Eraser] = true;
 				stopwatch.Restart();
-				editCanvas_MouseMove(sender, e);
+				isEditting[editState] = true;
+				mainGrid_MouseMove(sender, e);
 			}
 		}
 
-		private void editCanvas_MouseMove(object sender, MouseEventArgs e)
+		private void mainGrid_MouseMove(object sender, MouseEventArgs e)
 		{
 			if (!isEditting.ContainsKey(editState) ||
 				!isEditting[editState] ||
@@ -208,19 +195,39 @@ namespace WpfPlotDigitizer2
 
 			if (editState == EditState.Rectangle) {
 				var position = e.GetPosition(editCanvas);
-				var dx = position.X - mouseDownPos.X;
-				if (dx < 0)
-					Canvas.SetLeft(selectRect, position.X);
-				else
+				if (position.X < 0) {
+					Canvas.SetLeft(selectRect, 0);
+					selectRect.Width = mouseDownPos.X;
+				}
+				else if (position.X > Image.Width) {
 					Canvas.SetLeft(selectRect, mouseDownPos.X);
-				selectRect.Width = Math.Abs(dx);
+					selectRect.Width = Image.Width - mouseDownPos.X;
+				}
+				else {
+					var dx = position.X - mouseDownPos.X;
+					if (dx < 0)
+						Canvas.SetLeft(selectRect, position.X);
+					else
+						Canvas.SetLeft(selectRect, mouseDownPos.X);
+					selectRect.Width = Math.Abs(dx);
+				}
 
-				var dy = position.Y - mouseDownPos.Y;
-				if (dy < 0)
-					Canvas.SetTop(selectRect, position.Y);
-				else
+				if (position.Y < 0) {
+					Canvas.SetTop(selectRect, 0);
+					selectRect.Height = mouseDownPos.Y;
+				}
+				else if (position.Y > Image.Height) {
 					Canvas.SetTop(selectRect, mouseDownPos.Y);
-				selectRect.Height = Math.Abs(dy);
+					selectRect.Height = Image.Height - mouseDownPos.Y;
+				}
+				else {
+					var dy = position.Y - mouseDownPos.Y;
+					if (dy < 0)
+						Canvas.SetTop(selectRect, position.Y);
+					else
+						Canvas.SetTop(selectRect, mouseDownPos.Y);
+					selectRect.Height = Math.Abs(dy);
+				}
 			}
 			else if (editState == EditState.Polygon) {
 
@@ -243,7 +250,7 @@ namespace WpfPlotDigitizer2
 			isMoving = false;
 		}
 
-		private void editCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+		private void mainGrid_MouseUp(object sender, MouseButtonEventArgs e)
 		{
 			if (editState == EditState.Eraser) {
 				eraserRect.Visibility = Visibility.Hidden;
@@ -274,7 +281,12 @@ namespace WpfPlotDigitizer2
 				selectRect.Visibility = Visibility.Hidden;
 			}
 
-			e.Handled = true;			
+			e.Handled = true;
+		}
+		private void PanZoomGrid_MouseWheel(object sender, double scale)
+		{
+			eraserRect.Width = eraserOriginalSize / scale;
+			eraserRect.StrokeThickness = eraserOriginalBorderThickness / scale;
 		}
 	}
 

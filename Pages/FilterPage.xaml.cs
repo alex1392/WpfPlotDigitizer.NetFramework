@@ -23,7 +23,7 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class FilterPage : Page, INotifyPropertyChanged
 	{
-		private AppData data;
+		private Model data;
 		private Image<Rgba, byte> filteredImage;
 
 		public FilterPage()
@@ -57,7 +57,7 @@ namespace WpfPlotDigitizer2
 			ImageSource = filteredImage.ToBitmapSource();
 		}
 
-		public FilterPage(AppData data) : this()
+		public FilterPage(Model data) : this()
 		{
 			this.data = data;
 		}
