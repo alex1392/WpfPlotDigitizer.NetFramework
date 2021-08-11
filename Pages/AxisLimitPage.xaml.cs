@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class AxisLimitPage : Page, INotifyPropertyChanged
 	{
-		private Model data;
+		private Model model;
 
 		public AxisLimitPage()
 		{
@@ -30,54 +31,154 @@ namespace WpfPlotDigitizer2
 			Loaded += AxisLimitPage_Loaded;
 			Unloaded += AxisLimitPage_Unloaded;
 		}
+		public AxisLimitPage(Model model) : this()
+		{
+			this.model = model;
+			model.PropertyChanged += Model_PropertyChanged;
+		}
 
 		private void AxisLimitPage_Loaded(object sender, RoutedEventArgs e)
 		{
-			ImageSource = data.InputBitmapImage;
 		}
 
 		private void AxisLimitPage_Unloaded(object sender, RoutedEventArgs e)
 		{
-			double ymax = 0, ymin = 0, xmax = 0, xmin = 0;
-			if (!string.IsNullOrEmpty(YMax) && 
-				!double.TryParse(YMax, out ymax) ||
-				!string.IsNullOrEmpty(YMin) &&
-				!double.TryParse(YMin, out ymin) ||
-				!string.IsNullOrEmpty(XMax) &&
-				!double.TryParse(XMax, out xmax) ||
-				!string.IsNullOrEmpty(XMin) &&
-				!double.TryParse(XMin, out xmin))
-			{
-				MessageBox.Show("Cannot parse axis limit, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-				return;
-			}
-			data.AxisLimit = new Rect(new Point(xmin, ymin), new Point(xmax, ymax));
-			double ylog = 0, xlog = 0;
-			if (!string.IsNullOrEmpty(YLog) &&
-				!double.TryParse(YLog, out ylog) ||
-				!string.IsNullOrEmpty(XLog) &&
-				!double.TryParse(XLog, out xlog))
-			{
-				MessageBox.Show("Cannot parse axis log base, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-				return;
-			}
-			data.AxisLogBase = new Point(xlog, ylog);
+			model.AxisLimit = new Rect(new Point(xMin ?? 0, yMin ?? 0), new Point(xMax ?? 0, yMax ?? 0));
+			model.AxisLogBase = new Point(xLog ?? 0, yLog ?? 0);
+#if DEBUG
+			Debug.WriteLine(nameof(model.AxisLimit) + ": " + model.AxisLimit.ToString());
+			Debug.WriteLine(nameof(model.AxisLogBase) + ": " + model.AxisLogBase.ToString());
+#endif
 		}
 
-		public AxisLimitPage(Model data) : this()
+		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			this.data = data;
+			if (e.PropertyName == nameof(model.InputBitmapImage)) {
+				ImageSource = model.InputBitmapImage;
+			}
+			else if (e.PropertyName == nameof(model.AxisLimit)) {
+				xMin = model.AxisLimit.Left;
+				xMax = model.AxisLimit.Right;
+				yMin = model.AxisLimit.Top;
+				yMax = model.AxisLimit.Bottom;
+			}
+			else if (e.PropertyName == nameof(model.AxisLogBase)) {
+				xLog = model.AxisLogBase.X;
+				yLog = model.AxisLogBase.Y;
+			}
 		}
 
 		public ImageSource ImageSource { get; private set; }
 
-		public string YMax { get; set; }
-		public string YLog { get; set; }
-		public string YMin { get; set; }
-		public string XMax { get; set; }
-		public string XLog { get; set; }
-		public string XMin { get; set; }
+		private double? yMax = null;
+		private double? yLog = null;
+		private double? yMin = null;
+		private double? xMax = null;
+		private double? xLog = null;
+		private double? xMin = null;
+
+		// These properties need to share the same name with the Model's properties
+		public string AxisYMax
+		{
+			get => yMax.ToString();
+			set
+			{
+				if (string.IsNullOrWhiteSpace(value)) {
+					yMax = null;
+				}
+				else if (double.TryParse(value, out var result)) {
+					yMax = result;
+				}
+				else {
+					MessageBox.Show("Cannot parse axis limit, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+				}
+			}
+		}
+		public string AxisYLog
+		{
+			get => yLog.ToString();
+			set
+			{
+				if (string.IsNullOrWhiteSpace(value)) {
+					yLog = null;
+				}
+				else if (double.TryParse(value, out var result)) {
+					yLog = result;
+				}
+				else {
+					MessageBox.Show("Cannot parse axis limit, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+				}
+			}
+		}
+		public string AxisYMin
+		{
+			get => yMin.ToString();
+			set
+			{
+				if (string.IsNullOrWhiteSpace(value)) {
+					yMin = null;
+				}
+				else if (double.TryParse(value, out var result)) {
+					yMin = result;
+				}
+				else {
+					MessageBox.Show("Cannot parse axis limit, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+				}
+			}
+		}
+		public string AxisXMax
+		{
+			get => xMax.ToString();
+			set
+			{
+				if (string.IsNullOrWhiteSpace(value)) {
+					xMax = null;
+				}
+				else if (double.TryParse(value, out var result)) {
+					xMax = result;
+				}
+				else {
+					MessageBox.Show("Cannot parse axis limit, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+				}
+			}
+		}
+		public string AxisXLog
+		{
+			get => xLog.ToString();
+			set
+			{
+				if (string.IsNullOrWhiteSpace(value)) {
+					xLog = null;
+				}
+				else if (double.TryParse(value, out var result)) {
+					xLog = result;
+				}
+				else {
+					MessageBox.Show("Cannot parse axis limit, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+				}
+			}
+		}
+		public string AxisXMin
+		{
+			get => xMin.ToString();
+			set
+			{
+				if (string.IsNullOrWhiteSpace(value)) {
+					xMin = null;
+				}
+				else if (double.TryParse(value, out var result)) {
+					xMin = result;
+				}
+				else {
+					MessageBox.Show("Cannot parse axis limit, please go back and check the values!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+				}
+			}
+		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
+		private void OnPropertyChanged(string propertyName)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
 	}
 }

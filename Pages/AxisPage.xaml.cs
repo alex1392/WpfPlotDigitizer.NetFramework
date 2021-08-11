@@ -3,6 +3,7 @@ using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +25,17 @@ namespace WpfPlotDigitizer2
 	/// </summary>
 	public partial class AxisPage : Page, INotifyPropertyChanged
 	{
-		private Model data;
+		private Model model;
+		public event PropertyChangedEventHandler PropertyChanged;
+		public ImageSource ImageSource { get; private set; }
+
+		// These properties need to share the same name with Model's properties
+		public double AxisLeft { get; set; }
+		public double AxisTop { get; set; }
+		public double AxisWidth { get; set; }
+		public double AxisHeight { get; set; }
+
+		public ICommand GetAxisCommand { get; set; }
 
 		public AxisPage()
 		{
@@ -34,45 +45,42 @@ namespace WpfPlotDigitizer2
 			Loaded += AxisPage_Loaded;
 			Unloaded += AxisPage_Unloaded;
 		}
+		public AxisPage(Model model) : this()
+		{
+			this.model = model;
+			model.PropertyChanged += Model_PropertyChanged;
+		}
+
 
 		private void AxisPage_Loaded(object sender, RoutedEventArgs e)
 		{
-			ImageSource = data.InputBitmapImage;
 		}
 
 		private void AxisPage_Unloaded(object sender, RoutedEventArgs e)
 		{
-			var axisLocation = new Rectangle((int)AxisLeft, (int)AxisTop, (int)AxisWidth, (int)AxisHeight);
-			data.CroppedImage = Methods.CropImage(data.InputImage, axisLocation);
+			model.AxisLocation = new Rect(AxisLeft, AxisTop, AxisWidth, AxisHeight);
+#if DEBUG
+			Debug.WriteLine(nameof(model.AxisLocation) + ": " + model.AxisLocation.ToString());
+#endif
 		}
 
-		public AxisPage(Model data) : this()
+		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			this.data = data;
-			data.PropertyChanged += (sender, e) =>
-			{
-				if (e.PropertyName == nameof(data.InputImage))
-				{
-					GetAxis();
-				}
-			};
+			if (e.PropertyName == nameof(model.InputBitmapImage)) {
+				ImageSource = model.InputBitmapImage;
+				GetAxis();
+			}
+			else if (e.PropertyName == nameof(model.AxisLocation)) {
+				AxisLeft = model.AxisLocation.Left;
+				AxisTop = model.AxisLocation.Top;
+				AxisWidth = model.AxisLocation.Width;
+				AxisHeight = model.AxisLocation.Height;
+			}
 		}
-
-		public ImageSource ImageSource { get; private set; }
-
-		public double AxisLeft { get; set; }
-
-		public double AxisTop { get; set; }
-
-		public double AxisWidth { get; set; }
-
-		public double AxisHeight { get; set; }
-
-		public ICommand GetAxisCommand { get; set; }
 
 		private void GetAxis()
 		{
-			var image = data.InputImage;
+			var image = model.InputImage;
 			var axis = Methods.GetAxisLocation(image) ?? new Rectangle(image.Width / 4, image.Height / 4, image.Width / 2, image.Height / 2);
 			AxisLeft = axis.Left;
 			AxisTop = axis.Top;
@@ -80,6 +88,5 @@ namespace WpfPlotDigitizer2
 			AxisHeight = axis.Height;
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
 	}
 }

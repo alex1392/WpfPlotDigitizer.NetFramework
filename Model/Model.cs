@@ -20,11 +20,43 @@ using Bitmap = System.Drawing.Bitmap;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using ImageViewer = Emgu.CV.UI.ImageViewer;
 using System.Windows.Interop;
+using PropertyChanged;
 
 namespace WpfPlotDigitizer2
 {
 	public class Model : INotifyPropertyChanged
 	{
+		public Model()
+		{
+			PropertyChanged += Model_PropertyChanged;
+		}
+
+		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			switch (e.PropertyName) {
+				case nameof(InputBitmapImage):
+					InputImage = InputBitmapImage.ToBitmap().ToImage<Rgba, byte>();
+					break;
+				case nameof(AxisLocation):
+					CroppedImage = Methods.CropImage(InputImage, new Rectangle(
+						(int)Math.Round(AxisLocation.X),
+						(int)Math.Round(AxisLocation.Y),
+						(int)Math.Round(AxisLocation.Width),
+						(int)Math.Round(AxisLocation.Height)));
+					break;
+				case nameof(Filter):
+					FilteredImage = Methods.FilterRGB(CroppedImage, Filter.Min, Filter.Max);
+					break;
+				case nameof(FilteredImage):
+					// update edittedImage immidiately after setting filteredImage as there is no update trigger in editpage
+					EdittedImage = FilteredImage.Copy();
+
+					break;
+				default:
+					break;
+			}
+		}
+
 		public BitmapImage InputBitmapImage { get; set; }
 
 		public Image<Rgba, byte> InputImage { get; set; }
@@ -33,11 +65,24 @@ namespace WpfPlotDigitizer2
 
 		public Point AxisLogBase { get; set; }
 
+		public Rect AxisLocation { get; set; }
+
 		public Image<Rgba, byte> CroppedImage { get; set; }
+
+		public (Color Min, Color Max) Filter { get; set; }
+
 		public Image<Rgba, byte> FilteredImage { get; set; }
 		public Image<Rgba, byte> EdittedImage { get; set; }
 
+		public DataType DataType { get; set; }
+
 		public event PropertyChangedEventHandler PropertyChanged;
+	}
+
+	public enum DataType
+	{
+		Continuous,
+		Discrete,
 	}
 
 	public static class Methods
@@ -90,8 +135,8 @@ namespace WpfPlotDigitizer2
 		public static Image<Rgba, byte> FilterRGB(Image<Rgba, byte> image, Color min, Color max)
 		{
 			var mask = image.InRange(new Rgba(min.R, min.G, min.B, min.A), new Rgba(max.R, max.G, max.B, max.A));
-			image = image.Copy(mask);
-			image.SetValue(new Rgba(255, 0, 0, 0), mask.Not());
+			image = image.Copy();
+			image.SetValue(new Rgba(0, 0, 0, 0), mask.Not());
 			return image;
 		}
 
@@ -129,11 +174,11 @@ namespace WpfPlotDigitizer2
 				for (int i = 0; i < count; i++) {
 					using (var contour = contours[i]) {
 						var moments = CvInvoke.Moments(contour);
-						var Cx = (int)(moments.M10 / moments.M00);
-						var Cy = (int)(moments.M01 / moments.M00);
+						var Cx = (int)Math.Round(moments.M10 / moments.M00);
+						var Cy = (int)Math.Round(moments.M01 / moments.M00);
 						points.Add(new Point(Cx, Cy));
 
-						CvInvoke.DrawMarker(image, new System.Drawing.Point(Cx, Cy), new Rgba(255, 0, 0,255).MCvScalar, MarkerTypes.Cross, 5);
+						CvInvoke.DrawMarker(image, new System.Drawing.Point(Cx, Cy), new Rgba(255, 0, 0, 255).MCvScalar, MarkerTypes.Cross, 5);
 					}
 				}
 			}

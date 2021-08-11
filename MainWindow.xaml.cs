@@ -29,22 +29,24 @@ namespace WpfPlotDigitizer2
 			DataContext = this;
 		}
 
-		private readonly Model data;
+		private readonly Model model;
 
-		public MainWindow(Model data) : this()
+		public MainWindow(Model model, PageManager pageManager) : this()
 		{
-			this.data = data;
-			var pageList = new List<Page>
-			{
-				new LoadPage(data),
-				new AxisLimitPage(data),
-				new AxisPage(data),
-				new FilterPage(data),
-				new EditPage(data),
-				new PreviewPage(data),
-			};
-			PageNameList = pageList.Select(p => p.GetType().Name);
-			PageManager = new PageManager(pageList);
+			this.model = model;
+			this.PageManager = pageManager;
+			PageNameList = pageManager.PageList.Select(p => p.GetType().Name);
+			pageManager.GetPage<LoadPage>().PropertyChanged += LoadPage_PropertyChanged;
+		}
+
+		private void LoadPage_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			var loadpage = sender as LoadPage;
+			if (e.PropertyName == nameof(loadpage.Image)) {
+				if (PageManager.NextCommand.CanExecute(null)) {
+					PageManager.NextCommand.Execute(null);
+				}
+			}
 		}
 
 		public PageManager PageManager { get; private set; }

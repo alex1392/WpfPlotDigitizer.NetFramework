@@ -18,6 +18,7 @@ namespace WpfPlotDigitizer2
 			BackCommand = new RelayCommand(GoBack, CanGoBack);
 			NextCommand = new RelayCommand(GoNext, CanGoNext);
 			GoToCommand = new RelayCommand<int>(GoTo, CanGoTo);
+			GoToByTypeCommand = new RelayCommand<Type>(GoTo, CanGoTo);
 		}
 
 		public PageManager(List<Page> pageList) : this()
@@ -32,6 +33,7 @@ namespace WpfPlotDigitizer2
 		public RelayCommand BackCommand { get; private set; }
 		public RelayCommand NextCommand { get; private set; }
 		public RelayCommand<int> GoToCommand { get; private set; }
+		public RelayCommand<Type> GoToByTypeCommand { get; private set; }
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
@@ -57,19 +59,30 @@ namespace WpfPlotDigitizer2
 		}
 		private void GoTo(int targetIndex)
 		{
-			while (PageIndex < targetIndex)
-			{
-				// wait for the UI thread to catch up
-				Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => GoNext())).Wait();
-			}
-			while (PageIndex > targetIndex)
-			{
-				Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => GoBack())).Wait();
-			}
+			PageIndex = targetIndex;
 		}
 		private bool CanGoTo(int targetIndex)
 		{
 			return targetIndex >= 0 && targetIndex < PageList.Count;
+		}
+		private void GoTo(Type TPage)
+		{
+			var index = PageList.FindIndex(p => p.GetType() == TPage);
+			PageIndex = index;
+		}
+		private bool CanGoTo(Type TPage)
+		{
+			return PageList.Any(p => p.GetType() == TPage);
+		}
+
+		public Page GetPage(Type TPage)
+		{
+			return PageList.FirstOrDefault(p => p.GetType() == TPage);
+		}
+
+		public TPage GetPage<TPage>() where TPage : class
+		{
+			return PageList.FirstOrDefault(p => p is TPage) as TPage;
 		}
 	}
 }

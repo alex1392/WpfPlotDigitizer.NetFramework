@@ -47,15 +47,15 @@
 								 HorizontalAlignment="Center">
 			<StackPanel>
 				<Label Content="YMax" />
-				<TextBox Text="{Binding YMax, UpdateSourceTrigger=LostFocus}"/>
+				<TextBox Text="{Binding AxisYMax, UpdateSourceTrigger=LostFocus}"/>
 			</StackPanel>
 			<StackPanel>
 				<Label Content="YLog" />
-				<TextBox Text="{Binding YLog, UpdateSourceTrigger=LostFocus}"/>
+				<TextBox Text="{Binding AxisYLog, UpdateSourceTrigger=LostFocus}"/>
 			</StackPanel>
 			<StackPanel>
 				<Label Content="YMin" />
-				<TextBox Text="{Binding YMin, UpdateSourceTrigger=LostFocus}"/>
+				<TextBox Text="{Binding AxisYMin, UpdateSourceTrigger=LostFocus}"/>
 			</StackPanel>
 		</UniformGrid>
 		<UniformGrid Columns="3"
@@ -66,15 +66,15 @@
 								 VerticalAlignment="Center">
 			<StackPanel>
 				<Label Content="XMin" />
-				<TextBox Text="{Binding XMin, UpdateSourceTrigger=LostFocus}"/>
+				<TextBox Text="{Binding AxisXMin, UpdateSourceTrigger=LostFocus}"/>
 			</StackPanel>
 			<StackPanel>
 				<Label Content="XLog" />
-				<TextBox Text="{Binding XLog, UpdateSourceTrigger=LostFocus}"/>
+				<TextBox Text="{Binding AxisXLog, UpdateSourceTrigger=LostFocus}"/>
 			</StackPanel>
 			<StackPanel>
 				<Label Content="XMax" />
-				<TextBox Text="{Binding XMax, UpdateSourceTrigger=LostFocus}"/>
+				<TextBox Text="{Binding AxisXMax, UpdateSourceTrigger=LostFocus}"/>
 			</StackPanel>
 		</UniformGrid>
 	</Grid>

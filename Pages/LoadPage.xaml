@@ -62,11 +62,11 @@
 							Loaded="browseButton_Loaded"/>
 
 		</Grid>
-		<Image x:Name="image"
+		<Image x:Name="imageControl"
 					 HorizontalAlignment="Left"
 					 Margin="55,66,0,222"
 					 Width="184"
-					 Visibility="Visible" />
+					 Visibility="Hidden" />
 
 	</Grid>
 </Page>

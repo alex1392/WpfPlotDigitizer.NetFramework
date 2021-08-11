@@ -58,7 +58,10 @@ namespace WpfPlotDigitizer2
 		public EditPage(Model model) : this()
 		{
 			this.model = model;
+			model.PropertyChanged += Model_PropertyChanged;
 		}
+
+
 		public EditManager<Image<Rgba, byte>> EditManager { get; private set; }
 		public ImageSource ImageSource => Image?.ToBitmapSource();
 		public IEnumerable<string> UndoList
@@ -81,14 +84,23 @@ namespace WpfPlotDigitizer2
 
 		private void EditPage_Loaded(object sender, RoutedEventArgs e)
 		{
-			Image = model.FilteredImage;
-			EditManager = new EditManager<Image<Rgba, byte>>(Image.Copy());
-			EditManager.PropertyChanged += EditManager_PropertyChanged;
+			Application.Current.MainWindow.PreviewKeyDown += MainWindow_KeyDown;
+
 		}
 
 		private void EditPage_Unloaded(object sender, RoutedEventArgs e)
 		{
 			model.EdittedImage = Image;
+			Application.Current.MainWindow.PreviewKeyDown -= MainWindow_KeyDown;
+
+		}
+		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(model.FilteredImage)) {
+				Image = model.FilteredImage.Copy();
+				EditManager = new EditManager<Image<Rgba, byte>>(Image.Copy());
+				EditManager.PropertyChanged += EditManager_PropertyChanged;
+			}
 		}
 		private void OnPropertyChanged(string propertyName)
 		{
@@ -238,7 +250,11 @@ namespace WpfPlotDigitizer2
 				var position = centre - size / 2;
 				Canvas.SetLeft(eraserRect, position.X);
 				Canvas.SetTop(eraserRect, position.Y);
-				var rect = new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y);
+				var rect = new Rectangle(
+					(int)Math.Round(position.X),
+					(int)Math.Round(position.Y), 
+					(int)Math.Round(size.X), 
+					(int)Math.Round(size.Y));
 				Methods.EraseImage(Image, rect);
 				// update the image by "N" frames per second
 				if (stopwatch.ElapsedMilliseconds > 1000 / fps) {
@@ -265,6 +281,10 @@ namespace WpfPlotDigitizer2
 
 		private void selectRect_KeyDown(object sender, KeyEventArgs e)
 		{
+			
+		}
+		private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+		{
 			if (editState != EditState.Rectangle ||
 				selectRect.Visibility != Visibility.Visible) {
 				return;
@@ -272,7 +292,11 @@ namespace WpfPlotDigitizer2
 			if (e.Key == Key.Back || e.Key == Key.Delete) {
 				var left = Canvas.GetLeft(selectRect);
 				var top = Canvas.GetTop(selectRect);
-				var rect = new Rectangle((int)left, (int)top, (int)selectRect.Width, (int)selectRect.Height);
+				var rect = new Rectangle(
+					(int)Math.Round(left),
+					(int)Math.Round(top),
+					(int)Math.Round(selectRect.Width),
+					(int)Math.Round(selectRect.Height));
 				Methods.EraseImage(Image, rect);
 				var image = Image.Copy();
 				if (EditManager.EditCommand.CanExecute((image, "Delete rectangle region"))) {

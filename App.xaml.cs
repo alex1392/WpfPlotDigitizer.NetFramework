@@ -5,6 +5,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace WpfPlotDigitizer2
@@ -18,14 +20,28 @@ namespace WpfPlotDigitizer2
 		{
 			base.OnStartup(e);
 			var model = new Model();
-			var mainWindow = new MainWindow(model);
+			var pageList = new List<Page>
+			{
+				new LoadPage(model),
+				new AxisLimitPage(model),
+				new AxisPage(model),
+				new FilterPage(model),
+				new EditPage(model),
+				new PreviewPage(model),
+			};
+			var pageManager = new PageManager(pageList);
+			var mainWindow = new MainWindow(model, pageManager);
 			mainWindow.Show();
 #if DEBUG
-			(mainWindow.PageManager.CurrentPage as LoadPage).SetImage(new BitmapImage(new Uri(@"C:\Users\alex\Desktop\Coding\WpfPlotDigitizer2\images\data.png")));
-			var targetIndex = mainWindow.PageManager.PageList.FindIndex(p => p is PreviewPage);
-			if (mainWindow.PageManager.GoToCommand.CanExecute(targetIndex))
-			{
-				mainWindow.PageManager.GoToCommand.Execute(targetIndex);
+			model.InputBitmapImage = new BitmapImage(new Uri(@"C:\Users\alex\Desktop\Coding\WpfPlotDigitizer2\images\Screenshot 2021-06-26 231058.png"));
+			model.AxisLimit = new Rect(900, 0, 70, 20);
+			model.AxisLogBase = new Point(0, 0);
+			model.AxisLocation = new Rect(138, 100, 632, 399);
+			model.Filter = (Color.FromRgb(0, 0, 0), Color.FromRgb(126, 254, 254));
+			model.DataType = DataType.Discrete;
+
+			if (pageManager.GoToByTypeCommand.CanExecute(typeof(PreviewPage))) {
+				pageManager.GoToByTypeCommand.Execute(typeof(PreviewPage));
 			}
 #endif
 		}

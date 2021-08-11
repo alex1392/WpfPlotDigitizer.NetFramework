@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -40,6 +41,10 @@ namespace WpfPlotDigitizer2
 
 		public RelayCommand ExportCommand { get; private set; }
 
+		public bool IsDiscrete { get; set; }
+
+		public bool IsContinuous { get; set; } = true;
+
 		private PreviewPage()
 		{
 			InitializeComponent();
@@ -47,40 +52,56 @@ namespace WpfPlotDigitizer2
 			ExportCommand = new RelayCommand(Export, CanExport);
 			Loaded += PreviewPage_Loaded;
 			Unloaded += PreviewPage_Unloaded;
+			PropertyChanged += PreviewPage_PropertyChanged;
 		}
 
 
 		public PreviewPage(Model model) : this()
 		{
 			this.model = model;
+			model.PropertyChanged += Model_PropertyChanged;
 		}
+
+		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(model.DataType)) {
+				IsDiscrete = model.DataType == DataType.Discrete;
+				IsContinuous = model.DataType == DataType.Continuous;
+			}
+		}
+
 		private void PreviewPage_Loaded(object sender, RoutedEventArgs e)
 		{
-			Image = model.EdittedImage;
-			continuousButton.IsChecked = true;
+			if (IsDiscrete) {
+				OnPropertyChanged(nameof(IsDiscrete));
+			}
+			else if (IsContinuous) {
+				OnPropertyChanged(nameof(IsContinuous));
+			}
 		}
 		private void PreviewPage_Unloaded(object sender, RoutedEventArgs e)
 		{
-			discreteButton.IsChecked = false;
-			continuousButton.IsChecked = false;
+			model.DataType = IsDiscrete ? DataType.Discrete : DataType.Continuous;
 		}
 
-		private void discreteButton_Checked(object sender, RoutedEventArgs e)
+		private void PreviewPage_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			Image = model.EdittedImage.Copy();
-			var points = Methods.GetDiscretePoints(Image);
-			OnPropertyChanged(nameof(ImageSource));
+			if (e.PropertyName == nameof(IsDiscrete) && IsDiscrete) {
+				Image = model.EdittedImage.Copy();
+				var points = Methods.GetDiscretePoints(Image);
+				OnPropertyChanged(nameof(ImageSource));
+				data = Methods.TransformData(points, new Size(Image.Width, Image.Height), model.AxisLimit, model.AxisLogBase);
 
-			data = Methods.TransformData(points, new Size(Image.Width, Image.Height), model.AxisLimit, model.AxisLogBase);
+			}
+			else if (e.PropertyName == nameof(IsContinuous) && IsContinuous) {
+				Image = model.EdittedImage.Copy();
+				var points = Methods.GetContinuousPoints(Image);
+				OnPropertyChanged(nameof(ImageSource));
+				data = Methods.TransformData(points, new Size(Image.Width, Image.Height), model.AxisLimit, model.AxisLogBase);
+
+			}
 		}
 
-		private void continuousButton_Checked(object sender, RoutedEventArgs e)
-		{
-			Image = model.EdittedImage.Copy();
-			var points = Methods.GetContinuousPoints(Image);
-			OnPropertyChanged(nameof(ImageSource));
-			data = Methods.TransformData(points, new Size(Image.Width, Image.Height), model.AxisLimit, model.AxisLogBase);
-		}
 
 		private void OnPropertyChanged(string propertyName)
 		{
@@ -90,15 +111,15 @@ namespace WpfPlotDigitizer2
 		private void Export()
 		{
 			var saveFileDialog = new SaveFileDialog();
-			saveFileDialog.Filter = "Excel (.xlsx) | *.xlsx |CSV (.csv) | *.csv |TXT (.txt) | *.txt";
+			saveFileDialog.Filter = "Excel |*.xlsx|" +
+				"CSV |*.csv|" + 
+				"TXT |*.txt";
 			if (saveFileDialog.ShowDialog() == false)
 				return;
-			
+
 			TrySave(saveFileDialog.FilterIndex);
 
-			
-
-			bool SaveAsExcel()
+			ExportResults SaveAsExcel(CancellationToken token)
 			{
 				int dataCount = data.Count;
 				object[,] dataArray = new object[data.Count + 1, 2];
@@ -107,8 +128,14 @@ namespace WpfPlotDigitizer2
 				for (int i = 0; i < dataCount; i++) {
 					dataArray[i + 1, 0] = data[i].X;
 					dataArray[i + 1, 1] = data[i].Y;
+					if (token.IsCancellationRequested) {
+						return ExportResults.Canceled;
+					}
 				}
 
+				if (token.IsCancellationRequested) {
+					return ExportResults.Canceled;
+				}
 				var excel = new Excel.Application()
 				{
 					Visible = false,
@@ -116,7 +143,7 @@ namespace WpfPlotDigitizer2
 				};
 				var wBook = excel.Workbooks.Add(Type.Missing);
 				var wSheet = (Excel._Worksheet)wBook.Worksheets[1];
-				try {
+				try {	
 					wBook.Activate();
 					wSheet.Activate();
 
@@ -125,13 +152,16 @@ namespace WpfPlotDigitizer2
 						finalColLetter, dataCount + 1);
 
 					wSheet.get_Range(excelRange, Type.Missing).Value2 = dataArray;
+					if (token.IsCancellationRequested) {
+						return ExportResults.Canceled;
+					}
 					wBook.SaveAs(saveFileDialog.FileName);
 					wBook.Close(false);
 					excel.Quit();
-					return true;
+					return ExportResults.Sucessful;
 				}
 				catch (Exception) {
-					return false;
+					return ExportResults.Failed;
 				}
 				finally {
 					Marshal.ReleaseComObject(wSheet);
@@ -142,7 +172,15 @@ namespace WpfPlotDigitizer2
 					GC.WaitForPendingFinalizers();
 				}
 			}
-			bool SaveText(string seperator)
+			ExportResults SaveAsCSV(CancellationToken token)
+			{
+				return SaveText(",", token);
+			}
+			ExportResults SaveAsTXT(CancellationToken token)
+			{
+				return SaveText("\t", token);
+			}
+			ExportResults SaveText(string seperator, CancellationToken token)
 			{
 				try {
 					string strPath = saveFileDialog.FileName;
@@ -152,6 +190,9 @@ namespace WpfPlotDigitizer2
 					int dataCount = data.Count;
 					for (int i = 0; i < dataCount; i++) {
 						content.AppendLine(data[i].X.ToString() + seperator + data[i].Y.ToString());
+						if (token.IsCancellationRequested) {
+							return ExportResults.Canceled;
+						}
 					}
 
 					using (var fs = File.OpenWrite(strPath))
@@ -159,44 +200,49 @@ namespace WpfPlotDigitizer2
 						sw.Write(content.ToString());
 					}
 
-					return true;
+					return ExportResults.Sucessful;
 				}
 				catch (Exception) {
-					return false;
+					return ExportResults.Failed;
 				}
 			}
-			bool SaveAsCSV()
-			{
-				return SaveText(",");
-			}
-			bool SaveAsTXT()
-			{
-				return SaveText("\t");
-			}
 
-			void TrySave(int index)
+			async void TrySave(int index)
 			{
-				var IsSucessful = false;
+				Mouse.OverrideCursor = Cursors.Wait;
 
-				switch (index) {
-					case 1:
-					default:
-						IsSucessful = SaveAsExcel();
-						break;
-					case 2:
-						IsSucessful = SaveAsCSV();
-						break;
-					case 3:
-						IsSucessful = SaveAsTXT();
-						break;
-				}
+				var cts = new CancellationTokenSource();
+				var token = cts.Token;
+				var saveTask = Task.Run(async () =>
+				{
+					switch (index) {
+						default:
+						case 1:
+							return SaveAsExcel(token);
+						case 2:
+							return SaveAsCSV(token);
+						case 3:
+							return SaveAsTXT(token);
+					}
+				}, token);
+				var popup = new ProgressPopup();
+				popup.Owner = Application.Current.MainWindow;
+				popup.Canceled += (sender, e) =>
+				{
+					cts.Cancel();
+				};
+				popup.Show();
 
-				if (IsSucessful) {
+				var result = await saveTask;
+				popup.Close();
+				Mouse.OverrideCursor = null;
+
+				if (result == ExportResults.Sucessful) {
 					MessageBox.Show("The data has been exported successfully.", "Notification", MessageBoxButton.OK, MessageBoxImage.Information);
 				}
-				else {
-					var result = MessageBox.Show("Something went wrong... try again?", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Error, MessageBoxResult.Cancel);
-					if (result == MessageBoxResult.OK) {
+				else if (result == ExportResults.Failed) {
+					var response = MessageBox.Show("Something went wrong... try again?", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Error, MessageBoxResult.Cancel);
+					if (response == MessageBoxResult.OK) {
 						TrySave(index);
 					}
 				}
@@ -208,4 +254,11 @@ namespace WpfPlotDigitizer2
 		}
 	}
 
+	public enum ExportResults
+	{
+		None,
+		Sucessful,
+		Failed,
+		Canceled
+	}
 }

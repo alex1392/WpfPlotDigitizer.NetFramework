@@ -39,28 +39,28 @@
 									Value="0" />
 					<Setter Property="RangeStop"
 									Value="255" />
-					<Setter Property="RangeStartSelected"
-									Value="0" />
-					<Setter Property="RangeStopSelected"
-									Value="254" />
 					<Setter Property="Height"
 									Value="20" />
 					<Setter Property="Template"
 									Value="{StaticResource RangeSliderTemplate}" />
-					<EventSetter Event="RangeSelectionChanged"
-											 Handler="RangeSlider_RangeSelectionChanged" />
 				</Style>
 				
 			</UniformGrid.Resources>
 			<local:RangeSlider Background="#FFFF9595"
 												 Foreground="Red" 
-												 x:Name="RangeSliderRed"/>
+												 x:Name="RangeSliderRed"
+												 RangeStartSelected="{Binding MinR, Mode=TwoWay}"
+												 RangeStopSelected="{Binding MaxR, Mode=TwoWay}"/>
 			<local:RangeSlider Background="#FF95FF95"
 												 Foreground="Lime"
-												 x:Name="RangeSliderGreen"/>
+												 x:Name="RangeSliderGreen"
+												 RangeStartSelected="{Binding MinG, Mode=TwoWay}"
+												 RangeStopSelected="{Binding MaxG, Mode=TwoWay}"/>
 			<local:RangeSlider Background="#FF9595FF"
 												 Foreground="Blue"
-												 x:Name="RangeSliderBlue"/>
+												 x:Name="RangeSliderBlue"
+												 RangeStartSelected="{Binding MinB, Mode=TwoWay}"
+												 RangeStopSelected="{Binding MaxB, Mode=TwoWay}"/>
 		</UniformGrid>
 		<local:ImageViewer Margin="5"
 											 ImageSource="{Binding ImageSource}" />

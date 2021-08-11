@@ -3,6 +3,7 @@ using Emgu.CV.Structure;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,30 +23,49 @@ namespace WpfPlotDigitizer2
 	/// <summary>
 	/// Interaction logic for LoadPage.xaml
 	/// </summary>
-	public partial class LoadPage : Page
+	public partial class LoadPage : Page, INotifyPropertyChanged
 	{
-		private Model data;
+		private Model model;
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public BitmapImage Image { get; set; }
+
+		public ImageSource ImageSource => Image;
 
 		public LoadPage()
 		{
 			InitializeComponent();
+			Loaded += LoadPage_Loaded;
+			Unloaded += LoadPage_Unloaded;
+			PropertyChanged += LoadPage_PropertyChanged;
 		}
 
-		public LoadPage(Model data) : this()
+		public LoadPage(Model model) : this()
 		{
-			this.data = data;
+			this.model = model;
+			model.PropertyChanged += Model_PropertyChanged;
 		}
-		public void SetImage(BitmapImage image)
+
+
+		private void LoadPage_Loaded(object sender, RoutedEventArgs e)
 		{
-			data.InputBitmapImage = image;
-			data.InputImage = image.ToBitmap().ToImage<Rgba, byte>();
 #if DEBUG
-			this.image.Source = image;
+			imageControl.Visibility = Visibility.Visible;
 #endif
-			var mainWindow = Application.Current.MainWindow as MainWindow;
-			if (mainWindow.PageManager.NextCommand.CanExecute(null))
-			{
-				mainWindow.PageManager.NextCommand.Execute(null);
+		}
+		private void LoadPage_Unloaded(object sender, RoutedEventArgs e)
+		{
+			model.InputBitmapImage = Image;
+		}
+		private void LoadPage_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			
+		}
+		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(model.InputBitmapImage)) {
+				Image = model.InputBitmapImage;
 			}
 		}
 
@@ -63,17 +83,15 @@ namespace WpfPlotDigitizer2
 				"(*.bmp)|*.bmp|" +
 				"(*.tif)|*.tif|" +
 				"Any |*.*";
-			if (dialog.ShowDialog() != true)
-			{
+			if (dialog.ShowDialog() != true) {
 				return;
 			}
 			var filename = dialog.FileName;
 			var image = loadImage(filename);
-			if (image is null)
-			{
+			if (image is null) {
 				return;
 			}
-			SetImage(image);
+			Image = image;
 		}
 
 		private void pasteButton_Click(object sender, RoutedEventArgs e)
@@ -84,8 +102,7 @@ namespace WpfPlotDigitizer2
 		private void Page_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.KeyboardDevice.Modifiers == ModifierKeys.Control &&
-				e.Key == Key.V)
-			{
+				e.Key == Key.V) {
 				pasteImage();
 			}
 		}
@@ -93,39 +110,32 @@ namespace WpfPlotDigitizer2
 		private void Page_DragOver(object sender, DragEventArgs e)
 		{
 			bool isEnable;
-			if (e.Data.GetDataPresent(DataFormats.FileDrop))
-			{
+			if (e.Data.GetDataPresent(DataFormats.FileDrop)) {
 				var files = (string[])e.Data.GetData(DataFormats.FileDrop);
 				var filename = files[0];
-				if (File.Exists(filename))
-				{
+				if (File.Exists(filename)) {
 					isEnable = true;
 				}
-				else
-				{
+				else {
 					isEnable = false;
 				}
 			}
-			else
-			{
+			else {
 				isEnable = false;
 			}
 
-			if (!isEnable)
-			{
+			if (!isEnable) {
 				e.Effects = DragDropEffects.None;
 				e.Handled = true;
 			}
-			else
-			{
+			else {
 				e.Effects = DragDropEffects.Copy;
 			}
 		}
 
 		private void Page_Drop(object sender, DragEventArgs e)
 		{
-			if (!e.Data.GetDataPresent(DataFormats.FileDrop))
-			{
+			if (!e.Data.GetDataPresent(DataFormats.FileDrop)) {
 				MessageBox.Show("Input file is not valid.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
 			}
@@ -133,57 +143,49 @@ namespace WpfPlotDigitizer2
 			var files = (string[])e.Data.GetData(DataFormats.FileDrop);
 			var filename = files[0];
 			var image = loadImage(filename);
-			if (image is null)
-			{
+			if (image is null) {
 				return;
 			}
-			SetImage(image);
+			Image = image;
 		}
+
 		private void pasteImage()
 		{
-			if (Clipboard.ContainsImage())
-			{
+			if (Clipboard.ContainsImage()) {
 				var source = Clipboard.GetImage();
 				var image = source.ToBitmapImage();
-				SetImage(image);
+				Image = image;
 			}
-			else if (Clipboard.ContainsFileDropList())
-			{
+			else if (Clipboard.ContainsFileDropList()) {
 				var files = Clipboard.GetFileDropList();
 				var file = files[0];
 				var image = loadImage(file);
-				if (image is null)
-				{
+				if (image is null) {
 					return;
 				}
-				SetImage(image);
+				Image = image;
 			}
-			else
-			{
+			else {
 				MessageBox.Show("Clipboard does not contain image.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return;
 			}
 		}
-		
+
 		private BitmapImage loadImage(string filename)
 		{
-			if (!File.Exists(filename))
-			{
+			if (!File.Exists(filename)) {
 				MessageBox.Show("Input file is not valid.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return null;
 			}
-			try
-			{
+			try {
 				var image = new BitmapImage(new Uri(filename));
 				return image;
 			}
-			catch (NotSupportedException ex)
-			{
+			catch (NotSupportedException ex) {
 				MessageBox.Show(ex.Message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return null;
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				MessageBox.Show(ex.Message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return null;
 			}
