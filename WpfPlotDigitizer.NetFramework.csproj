@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>WpfPlotDigitizer2</RootNamespace>
     <AssemblyName>WpfPlotDigitizer2</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -213,6 +213,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Controls\Axis\pan.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WpfPlotDigitizer.NetStandard\WpfPlotDigitizer.NetStandard.csproj">
+      <Project>{a60ef757-4603-4ac7-9b5c-d8ad9b0cf1b8}</Project>
+      <Name>WpfPlotDigitizer.NetStandard</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

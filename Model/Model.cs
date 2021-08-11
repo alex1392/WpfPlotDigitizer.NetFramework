@@ -21,6 +21,7 @@ using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using ImageViewer = Emgu.CV.UI.ImageViewer;
 using System.Windows.Interop;
 using PropertyChanged;
+using System.Windows.Shapes;
 
 namespace WpfPlotDigitizer2
 {
@@ -50,7 +51,6 @@ namespace WpfPlotDigitizer2
 				case nameof(FilteredImage):
 					// update edittedImage immidiately after setting filteredImage as there is no update trigger in editpage
 					EdittedImage = FilteredImage.Copy();
-
 					break;
 				default:
 					break;
@@ -213,6 +213,41 @@ namespace WpfPlotDigitizer2
 			}).ToList();
 
 			return dataList;
+		}
+
+		public static void EraseImage(Image<Rgba, byte> image, Polyline polyline)
+		{
+			// erase all pixels within polyline
+			var pointsChecked = new HashSet<Point>();
+			var boundary = polyline.RenderedGeometry.Bounds;
+			var xmin = (int)Math.Round(boundary.Left);
+			var xmax = (int)Math.Round(boundary.Right);
+			var ymin = (int)Math.Round(boundary.Top);
+			var ymax = (int)Math.Round(boundary.Bottom);
+			for (var x = xmin; x < xmax; x++) {
+				for (var y = ymin; y < ymax; y++) {
+					FloodFill(x, y);
+				}
+			}
+
+			void FloodFill(int x, int y)
+			{
+				var point = new Point(x, y);
+				if (pointsChecked.Contains(point)) {
+					return;
+				}
+				pointsChecked.Add(point);
+				if (!polyline.RenderedGeometry.FillContains(point)) {
+					return;
+				}
+				// erase pixel (set to transparent)
+				image.Data[y, x, 3] = 0;
+				// recursion
+				FloodFill(x + 1, y);
+				FloodFill(x, y + 1);
+				FloodFill(x - 1, y);
+				FloodFill(x, y - 1);
+			}
 		}
 	}
 

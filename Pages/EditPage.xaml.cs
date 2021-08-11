@@ -18,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using PointCollection = System.Windows.Media.PointCollection;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace WpfPlotDigitizer2
@@ -30,13 +31,17 @@ namespace WpfPlotDigitizer2
 		private Model model;
 		private EditState editState;
 		private Point mouseDownPos;
-		private bool isMoving;
 		private readonly double eraserOriginalSize;
 		private readonly double eraserOriginalBorderThickness;
 		private readonly Stopwatch stopwatch = new Stopwatch();
 		private readonly Dictionary<EditState, bool> isEditting = new Dictionary<EditState, bool>
 		{
 			{ EditState.Eraser, false },
+			{ EditState.Rectangle, false },
+			{ EditState.Polygon, false },
+		};
+		private readonly Dictionary<EditState, bool> isSelected = new Dictionary<EditState, bool>
+		{
 			{ EditState.Rectangle, false },
 			{ EditState.Polygon, false },
 		};
@@ -186,8 +191,24 @@ namespace WpfPlotDigitizer2
 				isEditting[editState] = true;
 			}
 			else if (editState == EditState.Polygon) {
-
-				isEditting[editState] = true;
+				var position = e.GetPosition(editCanvas);
+				if (e.ClickCount == 1) {
+					if (!isEditting[editState]) {
+						// add the second point as an indicator
+						selectPoly.Points = new PointCollection { position, position };
+						selectPoly.Visibility = Visibility.Visible;
+						isEditting[editState] = true;
+					}
+					else {
+						selectPoly.Points[selectPoly.Points.Count - 1] = position;
+						selectPoly.Points.Add(position);
+					}
+				}
+				else if (e.ClickCount == 2) {
+					selectPoly.Points.Add(selectPoly.Points[0]);
+					isEditting[editState] = false;
+					isSelected[editState] = true;
+				}
 			}
 			else if (editState == EditState.Eraser) {
 				eraserRect.Visibility = Visibility.Visible;
@@ -200,10 +221,8 @@ namespace WpfPlotDigitizer2
 		private void mainGrid_MouseMove(object sender, MouseEventArgs e)
 		{
 			if (!isEditting.ContainsKey(editState) ||
-				!isEditting[editState] ||
-				isMoving)
+				!isEditting[editState])
 				return;
-			isMoving = true;
 
 			if (editState == EditState.Rectangle) {
 				var position = e.GetPosition(editCanvas);
@@ -242,7 +261,8 @@ namespace WpfPlotDigitizer2
 				}
 			}
 			else if (editState == EditState.Polygon) {
-
+				var position = e.GetPosition(editCanvas);
+				selectPoly.Points[selectPoly.Points.Count - 1] = position;
 			}
 			else if (editState == EditState.Eraser) {
 				var centre = e.GetPosition(editCanvas);
@@ -252,8 +272,8 @@ namespace WpfPlotDigitizer2
 				Canvas.SetTop(eraserRect, position.Y);
 				var rect = new Rectangle(
 					(int)Math.Round(position.X),
-					(int)Math.Round(position.Y), 
-					(int)Math.Round(size.X), 
+					(int)Math.Round(position.Y),
+					(int)Math.Round(size.X),
 					(int)Math.Round(size.Y));
 				Methods.EraseImage(Image, rect);
 				// update the image by "N" frames per second
@@ -262,8 +282,6 @@ namespace WpfPlotDigitizer2
 					stopwatch.Restart();
 				}
 			}
-
-			isMoving = false;
 		}
 
 		private void mainGrid_MouseUp(object sender, MouseButtonEventArgs e)
@@ -275,21 +293,23 @@ namespace WpfPlotDigitizer2
 				if (EditManager.EditCommand.CanExecute((image, "erase image")))
 					EditManager.EditCommand.Execute((image, "erase image"));
 			}
-
-			isEditting[editState] = false;
+			if (editState != EditState.Polygon) {
+				isEditting[editState] = false;
+			}
+			if (editState == EditState.Rectangle) {
+				isSelected[editState] = true;
+			}
 		}
 
-		private void selectRect_KeyDown(object sender, KeyEventArgs e)
-		{
-			
-		}
 		private void MainWindow_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (editState != EditState.Rectangle ||
-				selectRect.Visibility != Visibility.Visible) {
+			if (!isSelected[editState]) {
 				return;
 			}
-			if (e.Key == Key.Back || e.Key == Key.Delete) {
+			if (editState == EditState.Rectangle) {
+				if (e.Key != Key.Back && e.Key != Key.Delete) {
+					return;
+				}
 				var left = Canvas.GetLeft(selectRect);
 				var top = Canvas.GetTop(selectRect);
 				var rect = new Rectangle(
@@ -304,8 +324,19 @@ namespace WpfPlotDigitizer2
 				}
 				selectRect.Visibility = Visibility.Hidden;
 			}
-
-			e.Handled = true;
+			else if (editState == EditState.Polygon) {
+				if (e.Key != Key.Back && e.Key != Key.Delete) {
+					return;
+				}
+				// erase pixels within poly
+				Methods.EraseImage(Image, selectPoly);
+				// execute edit command
+				var image = Image.Copy();
+				if (EditManager.EditCommand.CanExecute((image, "Delete polygon region"))) {
+					EditManager.EditCommand.Execute((image, "Delete polygon region"));
+				}
+				selectPoly.Visibility = Visibility.Hidden;
+			}
 		}
 		private void PanZoomGrid_MouseWheel(object sender, double scale)
 		{

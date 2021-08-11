@@ -33,16 +33,18 @@ namespace WpfPlotDigitizer2
 			var mainWindow = new MainWindow(model, pageManager);
 			mainWindow.Show();
 #if DEBUG
-			//model.InputBitmapImage = new BitmapImage(new Uri(@"C:\Users\alex\Desktop\Coding\WpfPlotDigitizer2\images\Screenshot 2021-06-26 231058.png"));
-			//model.AxisLimit = new Rect(900, 0, 70, 20);
-			//model.AxisLogBase = new Point(0, 0);
-			//model.AxisLocation = new Rect(138, 100, 632, 399);
-			//model.Filter = (Color.FromRgb(0, 0, 0), Color.FromRgb(126, 254, 254));
-			//model.DataType = DataType.Discrete;
+			if (true) {
+				model.InputBitmapImage = new BitmapImage(new Uri(@"C:\Users\alex\Desktop\Coding\WpfPlotDigitizer\images\Screenshot 2021-06-26 231058.png"));
+				model.AxisLimit = new Rect(900, 0, 70, 20);
+				model.AxisLogBase = new Point(0, 0);
+				model.AxisLocation = new Rect(138, 100, 632, 399);
+				model.Filter = (Color.FromRgb(0, 0, 0), Color.FromRgb(126, 254, 254));
+				model.DataType = DataType.Discrete;
 
-			//if (pageManager.GoToByTypeCommand.CanExecute(typeof(PreviewPage))) {
-			//	pageManager.GoToByTypeCommand.Execute(typeof(PreviewPage));
-			//}
+				if (pageManager.GoToByTypeCommand.CanExecute(typeof(PreviewPage))) {
+					pageManager.GoToByTypeCommand.Execute(typeof(PreviewPage));
+				} 
+			}
 #endif
 		}
 	}
