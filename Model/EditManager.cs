@@ -18,7 +18,7 @@ namespace WpfPlotDigitizer2
 			UndoCommand = new RelayCommand(Undo, CanUndo);
 			RedoCommand = new RelayCommand(Redo, CanRedo);
 			GoToCommand = new RelayCommand<int>(GoTo, CanGoTo);
-			EditCommand = new RelayCommand<(TObject,string)>(Edit, CanEdit);
+			EditCommand = new RelayCommand<(TObject, string)>(Edit, CanEdit);
 		}
 
 		public EditManager(TObject _object) : this()
@@ -72,15 +72,9 @@ namespace WpfPlotDigitizer2
 		}
 		private void GoTo(int targetIndex)
 		{
-			while (Index < targetIndex)
-			{
-				// wait for the UI thread to catch up
-				Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => Redo())).Wait();
-			}
-			while (Index > targetIndex)
-			{
-				Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() => Undo())).Wait();
-			}
+			Index = targetIndex;
+			UndoCommand.RaiseCanExecuteChanged();
+			RedoCommand.RaiseCanExecuteChanged();
 		}
 		private bool CanGoTo(int targetIndex)
 		{

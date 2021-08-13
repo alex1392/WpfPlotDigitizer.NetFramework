@@ -9,19 +9,11 @@
 				Height="450"
 				Width="800"
 				d:DataContext="{d:DesignInstance Type=local:MainWindow, IsDesignTimeCreatable=True}">
-	<Window.Resources>
-
-		<DataTemplate x:Key="SelectionBoxTemplate" />
-
-		<local:ComboBoxTemplateSelector x:Key="ComboBoxTemplateSelector"
-																		SelectedItemTemplate="{StaticResource SelectionBoxTemplate}" />
-
-	</Window.Resources>
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top"
 								Orientation="Horizontal"
 								Height="30"
-								Background="{StaticResource ToolBarColorBrush}">
+								Background="LightGray">
 			<StackPanel.Resources>
 				<Style TargetType="Button">
 					<Setter Property="Width"
@@ -47,8 +39,7 @@
 			<ComboBox Name="NaviComboBox"
 								ItemsSource="{Binding PageNameList}"
 								SelectedIndex="{Binding PageManager.PageIndex, Mode=TwoWay}"
-								Width="20"
-								ItemTemplateSelector="{StaticResource ComboBoxTemplateSelector}" />
+								Width="20" />
 		</StackPanel>
 		<Grid>
 

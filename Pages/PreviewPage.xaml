@@ -12,7 +12,7 @@
 
 	<DockPanel>
 		<DockPanel DockPanel.Dock="Top"
-							 Background="{StaticResource ToolBarColorBrush}"
+							 Background="LightGray"
 							 Height="30">
 			<DockPanel.Resources>
 				<Style BasedOn="{StaticResource {x:Type ToggleButton}}"

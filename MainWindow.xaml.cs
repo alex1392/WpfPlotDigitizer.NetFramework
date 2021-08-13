@@ -39,6 +39,12 @@ namespace WpfPlotDigitizer2
 			pageManager.GetPage<LoadPage>().PropertyChanged += LoadPage_PropertyChanged;
 		}
 
+
+		public PageManager PageManager { get; private set; }
+		public IEnumerable<string> PageNameList { get; private set; }
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
 		private void LoadPage_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var loadpage = sender as LoadPage;
@@ -48,12 +54,6 @@ namespace WpfPlotDigitizer2
 				}
 			}
 		}
-
-		public PageManager PageManager { get; private set; }
-		public IEnumerable<string> PageNameList { get; private set; }
-
-		public event PropertyChangedEventHandler PropertyChanged;
-
 		private void mainFrame_Navigating(object sender, NavigatingCancelEventArgs e)
 		{
 			// disable frame navigation to prevent keyboard input conflict

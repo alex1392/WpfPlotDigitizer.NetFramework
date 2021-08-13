@@ -183,10 +183,6 @@ namespace WpfPlotDigitizer2
 				var image = new BitmapImage(new Uri(filename));
 				return image;
 			}
-			catch (NotSupportedException ex) {
-				MessageBox.Show(ex.Message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-				return null;
-			}
 			catch (Exception ex) {
 				MessageBox.Show(ex.Message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 				return null;

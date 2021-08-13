@@ -10,22 +10,24 @@
 			Title="LoadPage"
 			KeyDown="Page_KeyDown"
 			Drop="Page_Drop"
+			DragOver="Page_DragOver"
 			AllowDrop="True"
-			Background="Transparent"
-			DragOver="Page_DragOver">
+			Background="Transparent">
 	<Grid>
 		<Grid Name="objectGroup"
 					HorizontalAlignment="Center"
 					VerticalAlignment="Center">
-			<TextBlock x:Name="textBlock"
-								 HorizontalAlignment="Center"
+			<TextBlock HorizontalAlignment="Center"
 								 TextWrapping="Wrap"
 								 TextAlignment="Center"
 								 FontSize="22"
 								 Width="312"
-								 VerticalAlignment="Top"><Run Text="Drag" /><Run Text=" &amp; drop" /><Run Text=" your image here" /></TextBlock>
-			<TextBlock x:Name="textBlock_Copy"
-								 HorizontalAlignment="Center"
+								 VerticalAlignment="Top">
+				<Run Text="Drag" />
+				<Run Text=" &amp; drop" />
+				<Run Text=" your image here" />
+			</TextBlock>
+			<TextBlock HorizontalAlignment="Center"
 								 Margin="0,29,0,0"
 								 TextWrapping="Wrap"
 								 TextAlignment="Center"
@@ -34,7 +36,7 @@
 								 VerticalAlignment="Top"
 								 Text="or" />
 			<Button x:Name="pasteButton"
-							Margin="51,58,48,71"
+							Margin="0,58,0,71"
 							Padding="5"
 							FontSize="22"
 							Content="Paste from clipboard"
@@ -42,8 +44,7 @@
 							ToolTip="Shortcut: Ctrl + V"
 							d:LayoutOverrides="Height"
 							Click="pasteButton_Click" />
-			<TextBlock x:Name="textBlock_Copy1"
-								 HorizontalAlignment="Center"
+			<TextBlock HorizontalAlignment="Center"
 								 Margin="0,0,0,41"
 								 TextWrapping="Wrap"
 								 TextAlignment="Center"
@@ -52,7 +53,6 @@
 								 VerticalAlignment="Bottom"
 								 Text="or" />
 			<Button x:Name="browseButton"
-							Margin="116,0,113,0"
 							Padding="5"
 							FontSize="22"
 							Content="Browse"
