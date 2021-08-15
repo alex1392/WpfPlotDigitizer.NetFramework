@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace WpfPlotDigitizer2
+namespace WpfPlotDigitizer.NetFramework
 {
 	public class ComboBoxTemplateSelector : DataTemplateSelector
 	{

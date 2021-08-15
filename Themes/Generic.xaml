@@ -1,9 +1,9 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:WpfPlotDigitizer2">
+    xmlns:local="clr-namespace:WpfPlotDigitizer.NetFramework">
 
 	<ResourceDictionary.MergedDictionaries>
-		<ResourceDictionary Source="/WpfPlotDigitizer2;component/Themes/RangeSlider.xaml" />
+		<ResourceDictionary Source="/WpfPlotDigitizer.NetFramework;component/Themes/RangeSlider.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

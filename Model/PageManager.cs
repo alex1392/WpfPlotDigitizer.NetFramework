@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
-namespace WpfPlotDigitizer2
+namespace WpfPlotDigitizer.NetFramework
 {
 	public class PageManager : INotifyPropertyChanged
 	{

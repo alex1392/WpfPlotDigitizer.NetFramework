@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WpfPlotDigitizer2.Properties {
+namespace WpfPlotDigitizer.NetFramework.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

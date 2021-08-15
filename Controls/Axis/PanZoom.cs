@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace WpfPlotDigitizer2
+namespace WpfPlotDigitizer.NetFramework
 {
 	/// <summary>
 	/// 提供平移相依屬性的靜態類別。
@@ -124,7 +124,7 @@ namespace WpfPlotDigitizer2
 		{
 			var input = GetInput(element);
 			var arg = e is MouseButtonEventArgs mbe ? mbe : null;
-			return (!input.IsEmpty && input.IsValid(arg)) ? true : false;
+			return !input.IsEmpty && input.IsValid(arg);
 		}
 
 	}
@@ -187,7 +187,6 @@ namespace WpfPlotDigitizer2
 				if (GetIsLeaveReset(element))
 					element.MouseLeave += Element_MouseLeave;
 				element.EnsureTransforms();
-				element.RenderTransformOrigin = new Point(0, 0);
 				element.Parent.SetValue(UIElement.ClipToBoundsProperty, true);
 			}
 			else

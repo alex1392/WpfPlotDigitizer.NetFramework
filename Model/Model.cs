@@ -23,7 +23,7 @@ using System.Windows.Interop;
 using PropertyChanged;
 using System.Windows.Shapes;
 
-namespace WpfPlotDigitizer2
+namespace WpfPlotDigitizer.NetFramework
 {
 	public class Model : INotifyPropertyChanged
 	{

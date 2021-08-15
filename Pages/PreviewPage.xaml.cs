@@ -23,7 +23,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace WpfPlotDigitizer2
+namespace WpfPlotDigitizer.NetFramework
 {
 	/// <summary>
 	/// Interaction logic for PreviewPage.xaml

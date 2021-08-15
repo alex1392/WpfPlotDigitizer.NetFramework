@@ -10,24 +10,23 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace WpfPlotDigitizer2
+namespace WpfPlotDigitizer.NetFramework
 {
 	[TypeConverter(typeof(InputsTypeConverter))]
 	public class Inputs
 	{
 		public int? ClickCount { get; set; }
 		public MouseButton? MouseButton { get; set; }
-		public Collection<Key> InputKeys { get; set; } = new Collection<Key>();
+		public Collection<Key> Keys { get; set; } = new Collection<Key>();
 
-		public bool IsEmpty => MouseButton == null && InputKeys.Count == 0 ?
-			true : false;
+		public bool IsEmpty => MouseButton == null && Keys.Count == 0;
 		public bool IsValid(MouseButtonEventArgs e)
 		{
 			// check if there is required mouse button and if the button is pressed
 			return (MouseButton != null && !((MouseButton)MouseButton).IsPressed()) ||
 			  (ClickCount != null && e != null && e.ClickCount != ClickCount) ||
 			  // check if there is any required keys and each key is pressed
-			  (InputKeys.Count > 0 && !IsValid(InputKeys)) ? false : true;
+			  (Keys.Count > 0 && !IsValid(Keys)) ? false : true;
 		}
 
 		private bool IsValid(Collection<Key> keys)

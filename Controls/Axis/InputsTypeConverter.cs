@@ -10,7 +10,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace WpfPlotDigitizer2
+namespace WpfPlotDigitizer.NetFramework
 {
 	/// <summary>
 	/// "mouse" and "key" as indicator
@@ -75,7 +75,7 @@ namespace WpfPlotDigitizer2
 					var keys = keyAll.Where(key => trimStr == key.ToString().ToLower());
 					foreach (var key in keys)
 					{
-						input.InputKeys.Add(key);
+						input.Keys.Add(key);
 					}
 				}
 			}

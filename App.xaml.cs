@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace WpfPlotDigitizer2
+namespace WpfPlotDigitizer.NetFramework
 {
 	/// <summary>
 	/// Interaction logic for App.xaml
@@ -22,6 +22,7 @@ namespace WpfPlotDigitizer2
 			var model = new Model();
 			var pageList = new List<Page>
 			{
+				new TestPage(),
 				new LoadPage(model),
 				new AxisLimitPage(model),
 				new AxisPage(model),
@@ -33,7 +34,7 @@ namespace WpfPlotDigitizer2
 			var mainWindow = new MainWindow(model, pageManager);
 			mainWindow.Show();
 #if DEBUG
-			if (true) {
+			if (false) {
 				model.InputBitmapImage = new BitmapImage(new Uri(@"C:\Users\alex\Desktop\Coding\WpfPlotDigitizer\images\Screenshot 2021-06-26 231058.png"));
 				model.AxisLimit = new Rect(900, 0, 70, 20);
 				model.AxisLogBase = new Point(0, 0);

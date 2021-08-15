@@ -10,26 +10,19 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace WpfPlotDigitizer.NetFramework
 {
 	/// <summary>
-	/// Interaction logic for WaitWindow.xaml
+	/// Interaction logic for TestPage.xaml
 	/// </summary>
-	public partial class ProgressPopup : Window
+	public partial class TestPage : Page
 	{
-		public ProgressPopup()
+		public TestPage()
 		{
 			InitializeComponent();
 		}
-
-		private void Button_Click(object sender, RoutedEventArgs e)
-		{
-			Canceled?.Invoke(this, new EventArgs());
-			this.Close();
-		}
-
-		public event EventHandler Canceled;
 	}
 }
