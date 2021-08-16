@@ -131,7 +131,7 @@
 								local:Pan.Input="mouse:left"
 								local:Pan.ClipToParent="True"
 								local:Zoom.IsEnabled="True"
-								local:Zoom.Maximum="10"
+								local:Zoom.Maximum="1000000"
 								local:Zoom.MouseWheel="PanZoomGrid_MouseWheel">
 						<Image Name="ImageControl"
 									 Source="{Binding ImageSource}" />

@@ -36,7 +36,7 @@ namespace WpfPlotDigitizer.NetFramework
 			this.model = model;
 			this.PageManager = pageManager;
 			PageNameList = pageManager.PageList.Select(p => p.GetType().Name);
-			pageManager.GetPage<LoadPage>().PropertyChanged += LoadPage_PropertyChanged;
+			
 		}
 
 
@@ -45,15 +45,7 @@ namespace WpfPlotDigitizer.NetFramework
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		private void LoadPage_PropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			var loadpage = sender as LoadPage;
-			if (e.PropertyName == nameof(loadpage.Image)) {
-				if (PageManager.NextCommand.CanExecute(null)) {
-					PageManager.NextCommand.Execute(null);
-				}
-			}
-		}
+		
 		private void mainFrame_Navigating(object sender, NavigatingCancelEventArgs e)
 		{
 			// disable frame navigation to prevent keyboard input conflict

@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -15,15 +16,32 @@ using System.Windows.Shapes;
 
 namespace WpfPlotDigitizer.NetFramework
 {
+	[ContentProperty(nameof(InnerContent))]
 	/// <summary>
 	/// Interaction logic for PanZoomViewer.xaml
-	/// </summary>
+	/// </summary>1
 	public partial class PanZoomViewer : UserControl
 	{
 		public PanZoomViewer()
 		{
 			InitializeComponent();
+			Loaded += PanZoomViewer_Loaded;
 		}
+
+		private void PanZoomViewer_Loaded(object sender, RoutedEventArgs e)
+		{
+			canvas.Width = content.ActualWidth;
+			canvas.Height = content.ActualHeight;
+		}
+
+		public FrameworkElement InnerContent
+		{
+			get { return (FrameworkElement)GetValue(InnerContentProperty); }
+			set { SetValue(InnerContentProperty, value); }
+		}
+
+		public static readonly DependencyProperty InnerContentProperty =
+			DependencyProperty.Register("InnerContent", typeof(FrameworkElement), typeof(PanZoomViewer), new PropertyMetadata());
 
 		public MouseButton PanMouseButton
 		{
@@ -53,14 +71,19 @@ namespace WpfPlotDigitizer.NetFramework
 		public static readonly DependencyProperty ZoomKeyModifierProperty =
 			DependencyProperty.Register("ZoomKeyModifier", typeof(ModifierKeys), typeof(PanZoomViewer), new PropertyMetadata(ModifierKeys.None));
 
+
 		private static readonly Cursor panCursor = Cursors.Hand;
 		private Point mouseAnchor;
+		private double leftAnchor;
+		private double topAnchor;
 		private bool isPanning;
 
 		private void ContentPresenter_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			if (PanInputCheck(content, e)) {
-				mouseAnchor = e.GetPosition(mainCanvas);
+				mouseAnchor = e.GetPosition(canvas);
+				leftAnchor = Canvas.GetLeft(content);
+				topAnchor = Canvas.GetTop(content);
 				Mouse.OverrideCursor = panCursor;
 				content.CaptureMouse();
 				isPanning = true;
@@ -70,25 +93,45 @@ namespace WpfPlotDigitizer.NetFramework
 		private void ContentPresenter_MouseMove(object sender, MouseEventArgs e)
 		{
 			if (isPanning && content.IsMouseCaptured) {
-				var delta = e.GetPosition(mainCanvas) - mouseAnchor;
-				var scale = content.ActualWidth / mainCanvas.ActualWidth;
-				var toX = PanZoomHelpers.Clamp(Canvas.GetLeft(content) + delta.X, 0, content.ActualWidth * (1 - scale));
-				var toY = PanZoomHelpers.Clamp(Canvas.GetTop(content) + delta.Y, 0, content.ActualHeight * (1 - scale));
+				var delta = e.GetPosition(canvas) - mouseAnchor;
+				var scale = content.ActualWidth / canvas.ActualWidth;
+				var toX = Math.Max(Math.Min(leftAnchor + delta.X, 0), canvas.ActualWidth * (1 - scale));
+				var toY = Math.Max(Math.Min(topAnchor + delta.Y, 0), canvas.ActualHeight * (1 - scale));
+				Canvas.SetLeft(content, toX);
+				Canvas.SetTop(content, toY);
 			}
 		}
 
 		private void ContentPresenter_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-
+			if (content.IsMouseCaptured) {
+				content.ReleaseMouseCapture();
+				Mouse.OverrideCursor = null;
+				isPanning = false;
+			}
 		}
 
 		private void ContentPresenter_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
+			if (Keyboard.Modifiers.Contain(ZoomKeyModifier)) {
+				// zoom speed
+				var scale = content.ActualWidth / canvas.ActualWidth;
 
-		}
-		private void ContentPresenter_KeyDown(object sender, KeyEventArgs e)
-		{
+				var delta = scale * (e.Delta > 0 ? .2 : -.2);
 
+
+				var relative = e.GetPosition(content);
+				var absolute = e.GetPosition(canvas);
+				//必須是scale先，translate後
+				var ToScale = Math.Max(scale + delta, 1);
+				var ToX = Math.Max(Math.Min(absolute.X - relative.X / scale * ToScale, 0), canvas.ActualWidth * (1 - ToScale));
+				var ToY = Math.Max(Math.Min(absolute.Y - relative.Y / scale * ToScale, 0), canvas.ActualHeight * (1 - ToScale));
+
+				content.Width = canvas.ActualWidth * ToScale;
+				content.Height = canvas.ActualHeight * ToScale;
+				Canvas.SetLeft(content, ToX);
+				Canvas.SetTop(content, ToY);
+			}
 		}
 
 		private bool PanInputCheck(FrameworkElement element, MouseButtonEventArgs e)
@@ -98,7 +141,12 @@ namespace WpfPlotDigitizer.NetFramework
 
 			bool IsKeyPressed(ModifierKeys key)
 			{
-				return key == ModifierKeys.None || Keyboard.Modifiers.Contain(key);
+				return key == ModifierKeys.None || Contains(Keyboard.Modifiers,key);
+
+				bool Contains(ModifierKeys a, ModifierKeys b)
+				{
+					return (a & b) == b;
+				}
 			}
 
 			bool IsMouseButtonPressed(MouseButton mouseButton)
@@ -121,8 +169,4 @@ namespace WpfPlotDigitizer.NetFramework
 
 	}
 
-	public static class PanZoomViewerHelper
-	{
-
-	}
 }

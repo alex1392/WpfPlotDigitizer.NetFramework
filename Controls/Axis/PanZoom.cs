@@ -218,7 +218,7 @@ namespace WpfPlotDigitizer.NetFramework
 			var scale = transforms.GetScale();
 
 			//ZoomSpeed
-			var zoom = e.Delta > 0 ? .2 : -.2;
+			var zoom = scale.ScaleX * (e.Delta > 0 ? .2 : -.2);
 
 			var relative = e.GetPosition(element);
 			var absolute = e.GetAbsolutePosition(element);

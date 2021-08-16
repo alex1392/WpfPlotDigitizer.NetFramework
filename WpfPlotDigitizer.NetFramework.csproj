@@ -70,6 +70,7 @@
     <Compile Include="TestPage.xaml.cs">
       <DependentUpon>TestPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Viewer.cs" />
     <Page Include="Controls\Axis\Axis.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -121,7 +122,7 @@
     <Compile Include="Controls\Axis\Inputs.cs" />
     <Compile Include="Controls\Axis\InputsTypeConverter.cs" />
     <Compile Include="Controls\Axis\PanZoom.cs" />
-    <Compile Include="Model\RangeSlider.cs" />
+    <Compile Include="Controls\RangeSlider.cs" />
     <Compile Include="Controls\Axis\Axis.xaml.cs">
       <DependentUpon>Axis.xaml</DependentUpon>
     </Compile>
@@ -160,6 +161,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\ProgressPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Viewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

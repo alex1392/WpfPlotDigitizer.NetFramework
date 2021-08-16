@@ -4,6 +4,7 @@
     xmlns:local="clr-namespace:WpfPlotDigitizer.NetFramework">
 
 	<ResourceDictionary.MergedDictionaries>
-		<ResourceDictionary Source="/WpfPlotDigitizer.NetFramework;component/Themes/RangeSlider.xaml" />
+		<ResourceDictionary Source="/Themes/RangeSlider.xaml" />
+		<ResourceDictionary Source="/Themes/Viewer.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

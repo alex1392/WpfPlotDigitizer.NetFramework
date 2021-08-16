@@ -10,8 +10,9 @@
 			Title="TestPage">
 
 	<Grid>
-		<local:PanZoomViewer>
-			<Image Source="Assets/1.png" />
+		<local:PanZoomViewer PanKeyModifier="Ctrl"
+												 ZoomKeyModifier="Ctrl">
+			<Image Source="Assets/1.png"/>
 		</local:PanZoomViewer>
 	</Grid>
 </Page>

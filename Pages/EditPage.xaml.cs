@@ -303,7 +303,7 @@ namespace WpfPlotDigitizer.NetFramework
 
 		private void MainWindow_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (!isSelected[editState]) {
+			if (isSelected.ContainsKey(editState) && !isSelected[editState]) {
 				return;
 			}
 			if (editState == EditState.Rectangle) {
