@@ -14,7 +14,6 @@ namespace WpfPlotDigitizer.NetFramework
 	/// </summary>
 	public static class Pan
 	{
-		#region Dependency Properties
 		public static readonly DependencyProperty IsEnabledProperty = DependencyProperty.RegisterAttached(
 		  "IsEnabled",
 		  typeof(bool),
@@ -26,29 +25,31 @@ namespace WpfPlotDigitizer.NetFramework
 		public static void SetIsEnabled(UIElement element, bool value)
 		  => element.SetValue(IsEnabledProperty, value);
 
-		public static readonly DependencyProperty InputProperty = DependencyProperty.RegisterAttached(
-			"Input",
-			typeof(Inputs),
-			typeof(Pan),
-			new PropertyMetadata(new Inputs()));
-		[AttachedPropertyBrowsableForType(typeof(UIElement))]
-		[TypeConverter(typeof(InputsTypeConverter))]
-		public static Inputs GetInput(DependencyObject obj)
-			=> (Inputs)obj.GetValue(InputProperty);
-		public static void SetInput(DependencyObject obj, Inputs value)
-			=> obj.SetValue(InputProperty, value);
 
-		public static readonly DependencyProperty ClipToParentProperty = DependencyProperty.RegisterAttached(
-			"ClipToParent",
-			typeof(bool),
-			typeof(Pan),
-			new PropertyMetadata(default(bool)));
+		public static readonly DependencyProperty MouseButtonProperty =
+			DependencyProperty.RegisterAttached("MouseButton", typeof(MouseButton), typeof(Pan), new PropertyMetadata(MouseButton.Left));
 		[AttachedPropertyBrowsableForType(typeof(UIElement))]
-		public static bool GetClipToParent(DependencyObject obj)
-			=> (bool)obj.GetValue(ClipToParentProperty);
-		public static void SetClipToParent(DependencyObject obj, bool value)
-			=> obj.SetValue(ClipToParentProperty, value);
-		#endregion
+		public static MouseButton GetMouseButton(DependencyObject obj)
+		{
+			return (MouseButton)obj.GetValue(MouseButtonProperty);
+		}
+		public static void SetMouseButton(DependencyObject obj, MouseButton value)
+		{
+			obj.SetValue(MouseButtonProperty, value);
+		}
+
+		public static readonly DependencyProperty KeyModifiersProperty =
+			DependencyProperty.RegisterAttached("KeyModifiers", typeof(ModifierKeys), typeof(Pan), new PropertyMetadata(ModifierKeys.None));
+		[AttachedPropertyBrowsableForType(typeof(UIElement))]
+		public static ModifierKeys GetKeyModifiers(DependencyObject obj)
+		{
+			return (ModifierKeys)obj.GetValue(KeyModifiersProperty);
+		}
+		public static void SetKeyModifiers(DependencyObject obj, ModifierKeys value)
+		{
+			obj.SetValue(KeyModifiersProperty, value);
+		}
+
 
 		private static readonly Cursor panCursor = new Uri(@"/Assets/pan.cur", UriKind.Relative).ToCursor();
 		private static Cursor ToCursor(this Uri uri) => new Cursor(Application.GetResourceStream(uri).Stream);
@@ -63,17 +64,14 @@ namespace WpfPlotDigitizer.NetFramework
 			if (!(d is FrameworkElement element))
 				throw new NotSupportedException($"Can only set the {IsEnabledProperty} attached behavior on a UIElement.");
 
-			if ((bool)e.NewValue)
-			{
+			if ((bool)e.NewValue) {
 				element.MouseDown += Element_MouseDown;
 				element.MouseUp += Element_MouseUp;
 				element.MouseMove += Element_MouseMove;
 				element.EnsureTransforms();
-				if (element.Parent != null && GetClipToParent(element))
-					element.Parent.SetValue(UIElement.ClipToBoundsProperty, true);
+				element.Parent?.SetValue(UIElement.ClipToBoundsProperty, true);
 			}
-			else
-			{
+			else {
 				element.MouseDown -= Element_MouseDown;
 				element.MouseUp -= Element_MouseUp;
 				element.MouseMove -= Element_MouseMove;
@@ -82,49 +80,79 @@ namespace WpfPlotDigitizer.NetFramework
 
 		private static void Element_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			var element = sender as FrameworkElement;
-			if (InputCheck(element, e))
-			{
-				var transforms = (element.RenderTransform as TransformGroup).Children;
-				translate = transforms.GetTranslate();
-				mouseAnchor = e.GetAbsolutePosition(element);
-				translateAnchor = new Point(translate.X, translate.Y);
-				cursorCache = element.Cursor;
-				element.Cursor = panCursor;
-				element.CaptureMouse();
-				IsPanning = true;
+			if (!(sender is FrameworkElement element)) {
+				return;
 			}
-		}
-		private static void Element_MouseUp(object sender, MouseButtonEventArgs e)
-		{
-			var element = sender as FrameworkElement;
-			if (element.IsMouseCaptured)
-			{
-				element.ReleaseMouseCapture();
-				element.Cursor = cursorCache;
-				IsPanning = false;
+			if (!InputCheck(element, e)) {
+				return;
 			}
+			var transforms = (element.RenderTransform as TransformGroup).Children;
+			translate = transforms.FirstOrDefault(tr => tr is TranslateTransform) as TranslateTransform;
+			mouseAnchor = e.GetAbsolutePosition(element);
+			translateAnchor = new Point(translate.X, translate.Y);
+			cursorCache = element.Cursor;
+			element.Cursor = panCursor;
+			element.CaptureMouse();
+			IsPanning = true;
 		}
 		private static void Element_MouseMove(object sender, MouseEventArgs e)
 		{
-			var element = sender as FrameworkElement;
-			if (element.IsMouseCaptured && IsPanning)
-			{
-				var delta = e.GetAbsolutePosition(element) - mouseAnchor;
-				var scale = (element.RenderTransform as TransformGroup).Children.GetScale();
-				var toX = PanZoomHelpers.Clamp(translateAnchor.X + delta.X, 0, element.ActualWidth * (1 - scale.ScaleX));
-				var toY = PanZoomHelpers.Clamp(translateAnchor.Y + delta.Y, 0, element.ActualHeight * (1 - scale.ScaleY));
-				translate.BeginAnimation(TranslateTransform.XProperty, toX, 0);
-				translate.BeginAnimation(TranslateTransform.YProperty, toY, 0);
+			if (!(sender is FrameworkElement element)) {
+				return;
 			}
+			if (!IsPanning || !element.IsMouseCaptured) {
+				return;
+			}
+			var delta = e.GetAbsolutePosition(element) - mouseAnchor;
+			var transforms = (element.RenderTransform as TransformGroup).Children;
+			var scale = transforms.FirstOrDefault(t => t is ScaleTransform) as ScaleTransform;
+			var toX = Math.Max(Math.Min(translateAnchor.X + delta.X, 0), element.ActualWidth * (1 - scale.ScaleX));
+			var toY = Math.Max(Math.Min(translateAnchor.Y + delta.Y, 0), element.ActualHeight * (1 - scale.ScaleY));
+			translate.BeginAnimation(TranslateTransform.XProperty, toX, 0);
+			translate.BeginAnimation(TranslateTransform.YProperty, toY, 0);
 
 		}
-
-		private static bool InputCheck(FrameworkElement element, EventArgs e)
+		private static void Element_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-			var input = GetInput(element);
-			var arg = e is MouseButtonEventArgs mbe ? mbe : null;
-			return !input.IsEmpty && input.IsValid(arg);
+			if (!(sender is FrameworkElement element)) {
+				return;
+			}
+			if (!element.IsMouseCaptured) {
+				return;
+			}
+			element.ReleaseMouseCapture();
+			element.Cursor = cursorCache;
+			IsPanning = false;
+		}
+
+		private static bool InputCheck(FrameworkElement element, MouseButtonEventArgs e)
+		{
+			var mouseButton = GetMouseButton(element);
+			var key = GetKeyModifiers(element);
+			return IsMouseButtonPressed(mouseButton) && IsKeyPressed(key);
+
+			static bool IsKeyPressed(ModifierKeys key)
+			{
+				return key == ModifierKeys.None || Contains(Keyboard.Modifiers, key);
+
+				static bool Contains(ModifierKeys a, ModifierKeys b)
+				{
+					return (a & b) == b;
+				}
+			}
+
+			static bool IsMouseButtonPressed(MouseButton mouseButton)
+			{
+				return mouseButton switch
+				{
+					MouseButton.Left => Mouse.LeftButton == MouseButtonState.Pressed,
+					MouseButton.Right => Mouse.RightButton == MouseButtonState.Pressed,
+					MouseButton.Middle => Mouse.MiddleButton == MouseButtonState.Pressed,
+					MouseButton.XButton1 => Mouse.XButton1 == MouseButtonState.Pressed,
+					MouseButton.XButton2 => Mouse.XButton2 == MouseButtonState.Pressed,
+					_ => true,
+				};
+			}
 		}
 
 	}
@@ -134,7 +162,6 @@ namespace WpfPlotDigitizer.NetFramework
 	/// </summary>
 	public static class Zoom
 	{
-		#region Dependency Properties
 		public static readonly DependencyProperty IsEnabledProperty = DependencyProperty.RegisterAttached(
 		  "IsEnabled",
 		  typeof(bool),
@@ -146,76 +173,50 @@ namespace WpfPlotDigitizer.NetFramework
 		public static void SetIsEnabled(UIElement element, bool value)
 		  => element.SetValue(IsEnabledProperty, value);
 
-		public static readonly DependencyProperty IsLeaveResetProperty = DependencyProperty.RegisterAttached(
-		  "IsLeaveReset",
-		  typeof(bool),
-		  typeof(Zoom),
-		  new PropertyMetadata(default(bool)));
+		public static readonly DependencyProperty KeyModifiersProperty =
+			DependencyProperty.RegisterAttached("KeyModifiers", typeof(ModifierKeys), typeof(Zoom), new PropertyMetadata(ModifierKeys.None));
 		[AttachedPropertyBrowsableForType(typeof(UIElement))]
-		public static bool GetIsLeaveReset(UIElement element)
-		  => (bool)element.GetValue(IsLeaveResetProperty);
-		public static void SetIsLeaveReset(UIElement element, bool value)
-		  => element.SetValue(IsLeaveResetProperty, value);
-
-		public static readonly DependencyProperty MaximumProperty = DependencyProperty.RegisterAttached(
-		  "Maximum",
-		  typeof(double),
-		  typeof(Zoom),
-		  new PropertyMetadata(5d, OnMaximumChanged));
-		[AttachedPropertyBrowsableForType(typeof(UIElement))]
-		public static double GetMaximum(UIElement element)
-		  => (double)element.GetValue(MaximumProperty);
-		public static void SetMaximum(UIElement element, double value)
-		  => element.SetValue(MaximumProperty, value);
-
+		public static ModifierKeys GetKeyModifiers(DependencyObject obj)
+		{
+			return (ModifierKeys)obj.GetValue(KeyModifiersProperty);
+		}
+		public static void SetKeyModifiers(DependencyObject obj, ModifierKeys value)
+		{
+			obj.SetValue(KeyModifiersProperty, value);
+		}
 
 		public static readonly DependencyProperty MouseWheelProperty =
 			DependencyProperty.RegisterAttached("MouseWheel", typeof(EventHandler<double>), typeof(Zoom), new PropertyMetadata(null));
 		public static EventHandler<double> GetMouseWheel(DependencyObject obj) => (EventHandler<double>)obj.GetValue(MouseWheelProperty);
 		public static void SetMouseWheel(DependencyObject obj, EventHandler<double> value) => obj.SetValue(MouseWheelProperty, value);
 
-		#endregion
 
 		private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			if (!(d is FrameworkElement element))
 				throw new NotSupportedException($"Can only set the {IsEnabledProperty} attached behavior on a UIElement.");
 
-			if ((bool)e.NewValue)
-			{
+			if ((bool)e.NewValue) {
 				element.MouseWheel += Element_MouseWheel;
-				if (GetIsLeaveReset(element))
-					element.MouseLeave += Element_MouseLeave;
 				element.EnsureTransforms();
-				element.Parent.SetValue(UIElement.ClipToBoundsProperty, true);
+				element.Parent?.SetValue(UIElement.ClipToBoundsProperty, true);
 			}
-			else
-			{
+			else {
 				element.MouseWheel -= Element_MouseWheel;
-				element.MouseLeave -= Element_MouseLeave;
 			}
 		}
 
 		private static double LeaveTime = 1;
 		private static double WheelTime = 0.1;
 
-		private static void Element_MouseLeave(object sender, MouseEventArgs e)
-		{
-			var element = sender as UIElement;
-			var transforms = (element.RenderTransform as TransformGroup).Children;
-			var translate = transforms.GetTranslate();
-			var scale = transforms.GetScale();
-			translate.BeginAnimation(TranslateTransform.XProperty, 1d, LeaveTime);
-			translate.BeginAnimation(TranslateTransform.YProperty, 1d, LeaveTime);
-			scale.BeginAnimation(ScaleTransform.ScaleXProperty, 1d, LeaveTime);
-			scale.BeginAnimation(ScaleTransform.ScaleYProperty, 1d, LeaveTime);
-		}
 		private static void Element_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
-			var element = sender as FrameworkElement;
+			if (!(sender is FrameworkElement element)) {
+				return;
+			}
 			var transforms = (element.RenderTransform as TransformGroup).Children;
-			var translate = transforms.GetTranslate();
-			var scale = transforms.GetScale();
+			var translate = transforms.FirstOrDefault(tr => tr is TranslateTransform) as TranslateTransform;
+			var scale = transforms.FirstOrDefault(tr => tr is ScaleTransform) as ScaleTransform;
 
 			//ZoomSpeed
 			var zoom = scale.ScaleX * (e.Delta > 0 ? .2 : -.2);
@@ -223,9 +224,9 @@ namespace WpfPlotDigitizer.NetFramework
 			var relative = e.GetPosition(element);
 			var absolute = e.GetAbsolutePosition(element);
 			//必須是scale先，translate後
-			var ToScale = PanZoomHelpers.Clamp(scale.ScaleX + zoom, GetMaximum(element), 1);
-			var ToX = PanZoomHelpers.Clamp(absolute.X - relative.X * ToScale, 0, element.ActualWidth * (1 - ToScale));
-			var ToY = PanZoomHelpers.Clamp(absolute.Y - relative.Y * ToScale, 0, element.ActualHeight * (1 - ToScale));
+			var ToScale = Math.Max(scale.ScaleX + zoom, 1);
+			var ToX = Math.Max(Math.Min(absolute.X - relative.X * ToScale, 0), element.ActualWidth * (1 - ToScale));
+			var ToY = Math.Max(Math.Min(absolute.Y - relative.Y * ToScale, 0), element.ActualHeight * (1 - ToScale));
 
 			scale.BeginAnimation(ScaleTransform.ScaleXProperty, ToScale, WheelTime);
 			scale.BeginAnimation(ScaleTransform.ScaleYProperty, ToScale, WheelTime);
@@ -233,14 +234,6 @@ namespace WpfPlotDigitizer.NetFramework
 			translate.BeginAnimation(TranslateTransform.YProperty, ToY, WheelTime);
 
 			GetMouseWheel(element)?.Invoke(element, ToScale);
-		}
-		private static void OnMaximumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			var value = (double)e.NewValue;
-			if (value < 1)
-			{
-				throw new InvalidOperationException($"{MaximumProperty} must be greater than inital scale (1).");
-			}
 		}
 	}
 
@@ -274,18 +267,16 @@ namespace WpfPlotDigitizer.NetFramework
 			element.RenderTransform = new TransformGroup
 			{
 				Children = new TransformCollection
-		{
-          // 必須是scale先，translate後
-          new ScaleTransform(),
-		  new TranslateTransform(),
-		  new RotateTransform(),
-		  new SkewTransform(),
-		},
+				{
+				  // 必須是scale先，translate後
+				  new ScaleTransform(),
+				  new TranslateTransform(),
+				  new RotateTransform(),
+				  new SkewTransform(),
+				},
 			};
 			element.RenderTransformOrigin = new Point(0, 0);
 		}
-		public static TranslateTransform GetTranslate(this TransformCollection transforms) => transforms.FirstOrDefault(tr => tr is TranslateTransform) as TranslateTransform;
-		public static ScaleTransform GetScale(this TransformCollection transforms) => transforms.FirstOrDefault(tr => tr is ScaleTransform) as ScaleTransform;
 		/// <summary>
 		/// 針對<paramref name="animatable"/>執行泛型動畫。
 		/// </summary>
@@ -298,8 +289,7 @@ namespace WpfPlotDigitizer.NetFramework
 		{
 			DependencyObject animation;
 			var duration = TimeSpan.FromMilliseconds(durationMs);
-			switch (to)
-			{
+			switch (to) {
 				case int i:
 					animation = new Int32Animation(i, duration);
 					break;
@@ -320,20 +310,5 @@ namespace WpfPlotDigitizer.NetFramework
 			}
 			animatable.BeginAnimation(dp, animation as AnimationTimeline);
 		}
-		public static double Clamp(double value, double Max, double Min)
-		{
-			if (Min > Max)
-				Swap(ref Max, ref Min);
-
-			if (value > Max)
-				return Max;
-			else if (value < Min)
-				return Min;
-			else
-				return value;
-		 
-			void Swap<T>(ref T x, ref T y) => (x, y) = (y, x);
-		}
-
 	}
 }

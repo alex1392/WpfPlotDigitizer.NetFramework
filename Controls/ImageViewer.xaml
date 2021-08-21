@@ -21,10 +21,7 @@
 			</Grid.Background>
 			<Image Source="{Binding ImageSource}"
 						 local:Pan.IsEnabled="True"
-						 local:Pan.Input="mouse:left"
-						 local:Pan.ClipToParent="True"
-						 local:Zoom.IsEnabled="True"
-						 local:Zoom.Maximum="10" />
+						 local:Zoom.IsEnabled="True" />
 			<Border BorderBrush="Black"
 							BorderThickness="1"/>
 		</Grid>

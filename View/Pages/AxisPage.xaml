@@ -14,17 +14,13 @@
 		<Viewbox Name="imageViewBox">
 			<Grid>
 				<Grid local:Pan.IsEnabled="True"
-							local:Pan.Input="mouse:left"
-							local:Pan.ClipToParent="True"
-							local:Zoom.IsEnabled="True"
-							local:Zoom.Maximum="10">
+							local:Zoom.IsEnabled="True">
 					<local:Axis x:Name="axisControl"
 											ImageSource="{Binding ImageSource}"
 											AxisLeft="{Binding AxisLeft, Mode=TwoWay}"
 											AxisTop="{Binding AxisTop, Mode=TwoWay}"
 											AxisWidth="{Binding AxisWidth, Mode=TwoWay}"
-											AxisHeight="{Binding AxisHeight, Mode=TwoWay}"
-											Input="mouse:left">
+											AxisHeight="{Binding AxisHeight, Mode=TwoWay}">
 						<i:Interaction.Triggers>
 							<i:EventTrigger EventName="MouseDoubleClick">
 								<i:InvokeCommandAction Command="{Binding GetAxisCommand}" />

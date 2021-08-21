@@ -42,7 +42,6 @@ namespace WpfPlotDigitizer.NetFramework
 			InitializeComponent();
 			DataContext = this;
 			GetAxisCommand = new RelayCommand(GetAxis);
-			Loaded += AxisPage_Loaded;
 			Unloaded += AxisPage_Unloaded;
 		}
 		public AxisPage(Model model) : this()
@@ -51,10 +50,6 @@ namespace WpfPlotDigitizer.NetFramework
 			model.PropertyChanged += Model_PropertyChanged;
 		}
 
-
-		private void AxisPage_Loaded(object sender, RoutedEventArgs e)
-		{
-		}
 
 		private void AxisPage_Unloaded(object sender, RoutedEventArgs e)
 		{

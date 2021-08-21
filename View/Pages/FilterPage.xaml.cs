@@ -45,7 +45,6 @@ namespace WpfPlotDigitizer.NetFramework
 		{
 			InitializeComponent();
 			DataContext = this;
-			Loaded += FilterPage_Loaded;
 			Unloaded += FilterPage_Unloaded;
 			PropertyChanged += FilterPage_PropertyChanged;
 		}
@@ -64,17 +63,13 @@ namespace WpfPlotDigitizer.NetFramework
 				MaxR = model.Filter.Max.R;
 				MaxG = model.Filter.Max.G;
 				MaxB = model.Filter.Max.B;
+				FilterImage();
 			}
 			else if (e.PropertyName == nameof(model.CroppedImage)) {
 				FilterImage();
-				isInputImageChanged = true;
 			}
 		}
 
-		private void FilterPage_Loaded(object sender, RoutedEventArgs e)
-		{
-			
-		}
 		private void FilterPage_Unloaded(object sender, RoutedEventArgs e)
 		{
 			model.Filter = (Color.FromRgb(
@@ -85,9 +80,7 @@ namespace WpfPlotDigitizer.NetFramework
 				(byte)Math.Round(MaxR),
 				(byte)Math.Round(MaxG),
 				(byte)Math.Round(MaxB)));
-			if (isInputImageChanged) {
-				model.FilteredImage = Image;
-			}
+			model.FilteredImage = Image;
 #if DEBUG
 			Debug.WriteLine("MinR: " + MinR);
 			Debug.WriteLine("MinG: " + MaxR);

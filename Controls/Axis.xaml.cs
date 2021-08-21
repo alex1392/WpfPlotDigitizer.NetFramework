@@ -16,13 +16,6 @@ namespace WpfPlotDigitizer.NetFramework
 	/// </summary>
 	public partial class Axis : UserControl, INotifyPropertyChanged
 	{
-		public Axis()
-		{
-			InitializeComponent();
-			gridMain.DataContext = this;
-		}
-
-		#region DPs
 		public Brush Stroke
 		{
 			get => (Brush)GetValue(StrokeProperty);
@@ -88,16 +81,38 @@ namespace WpfPlotDigitizer.NetFramework
 			typeof(Axis),
 			new PropertyMetadata(default(ImageSource), OnImageSourceChanged));
 
-		public Inputs Input
+		public MouseButton MouseButton
 		{
-			get => (Inputs)GetValue(InputProperty);
-			set => SetValue(InputProperty, value);
+			get { return (MouseButton)GetValue(MouseButtonProperty); }
+			set { SetValue(MouseButtonProperty, value); }
 		}
-		public static readonly DependencyProperty InputProperty = DependencyProperty.Register(
-			nameof(Input),
-			typeof(Inputs),
-			typeof(Axis),
-			new PropertyMetadata(new Inputs()));
+		public static readonly DependencyProperty MouseButtonProperty =
+			DependencyProperty.Register(nameof(MouseButton), typeof(MouseButton), typeof(Axis), new PropertyMetadata(MouseButton.Left));
+
+
+		public Thickness AxisMargin => new Thickness(AxisLeft, AxisTop, 0, 0);
+		public Rect AxisRelative => 
+			Image == null ? 
+			new Rect() : 
+			new Rect(AxisLeft / Image.PixelWidth, 
+				AxisTop / Image.PixelHeight, 
+				AxisWidth / Image.PixelWidth, 
+				AxisHeight / Image.PixelHeight);
+		public double AxisRight => AxisLeft + AxisWidth;
+		public double AxisBottom => AxisTop + AxisHeight;
+
+		public BitmapSource Image => ImageSource as BitmapSource;
+		private double tol = 10;
+		private bool IsAdjust = false;
+		private AdjustType State = AdjustType.None;
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public Axis()
+		{
+			InitializeComponent();
+			gridMain.DataContext = this;
+		}
 
 		private static void OnAxisLeftChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
@@ -127,25 +142,7 @@ namespace WpfPlotDigitizer.NetFramework
 			axis.OnPropertyChanged(nameof(AxisRelative));
 			axis.OnPropertyChanged(nameof(Image));
 		}
-		#endregion
 
-		public Thickness AxisMargin => new Thickness(AxisLeft, AxisTop, 0, 0);
-		public Rect AxisRelative => 
-			Image == null ? 
-			new Rect() : 
-			new Rect(AxisLeft / Image.PixelWidth, 
-				AxisTop / Image.PixelHeight, 
-				AxisWidth / Image.PixelWidth, 
-				AxisHeight / Image.PixelHeight);
-		public double AxisRight => AxisLeft + AxisWidth;
-		public double AxisBottom => AxisTop + AxisHeight;
-
-		public BitmapSource Image => ImageSource as BitmapSource;
-		private double tol = 10;
-		private bool IsAdjust = false;
-		private AdjustType State = AdjustType.None;
-
-		public event PropertyChangedEventHandler PropertyChanged;
 		protected void OnPropertyChanged(string propertyName)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -252,10 +249,22 @@ namespace WpfPlotDigitizer.NetFramework
 				AxisHeight = mousePos.Y - AxisTop;
 		}
 
-		private bool InputCheck(EventArgs e)
+		private bool InputCheck(MouseButtonEventArgs e)
 		{
-			var arg = e is MouseButtonEventArgs mbe ? mbe : null;
-			return !Input.IsEmpty && Input.IsValid(arg) ? true : false;
+			return IsPressed(MouseButton);
+
+			bool IsPressed(MouseButton mouseButton)
+			{
+				return mouseButton switch
+				{
+					MouseButton.Left => Mouse.LeftButton == MouseButtonState.Pressed,
+					MouseButton.Right => Mouse.RightButton == MouseButtonState.Pressed,
+					MouseButton.Middle => Mouse.MiddleButton == MouseButtonState.Pressed,
+					MouseButton.XButton1 => Mouse.XButton1 == MouseButtonState.Pressed,
+					MouseButton.XButton2 => Mouse.XButton2 == MouseButtonState.Pressed,
+					_ => true,
+				};
+			}
 		}
 	}
 

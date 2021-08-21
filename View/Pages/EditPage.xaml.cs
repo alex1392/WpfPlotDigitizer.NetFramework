@@ -90,14 +90,12 @@ namespace WpfPlotDigitizer.NetFramework
 		private void EditPage_Loaded(object sender, RoutedEventArgs e)
 		{
 			Application.Current.MainWindow.PreviewKeyDown += MainWindow_KeyDown;
-
 		}
 
 		private void EditPage_Unloaded(object sender, RoutedEventArgs e)
 		{
 			model.EdittedImage = Image;
 			Application.Current.MainWindow.PreviewKeyDown -= MainWindow_KeyDown;
-
 		}
 		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{

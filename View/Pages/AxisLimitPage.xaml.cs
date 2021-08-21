@@ -28,17 +28,12 @@ namespace WpfPlotDigitizer.NetFramework
 		{
 			InitializeComponent();
 			DataContext = this;
-			Loaded += AxisLimitPage_Loaded;
 			Unloaded += AxisLimitPage_Unloaded;
 		}
 		public AxisLimitPage(Model model) : this()
 		{
 			this.model = model;
 			model.PropertyChanged += Model_PropertyChanged;
-		}
-
-		private void AxisLimitPage_Loaded(object sender, RoutedEventArgs e)
-		{
 		}
 
 		private void AxisLimitPage_Unloaded(object sender, RoutedEventArgs e)
@@ -61,10 +56,16 @@ namespace WpfPlotDigitizer.NetFramework
 				xMax = model.AxisLimit.Right;
 				yMin = model.AxisLimit.Top;
 				yMax = model.AxisLimit.Bottom;
+				OnPropertyChanged(nameof(AxisYMin));
+				OnPropertyChanged(nameof(AxisYMax));
+				OnPropertyChanged(nameof(AxisXMin));
+				OnPropertyChanged(nameof(AxisXMax));
 			}
 			else if (e.PropertyName == nameof(model.AxisLogBase)) {
 				xLog = model.AxisLogBase.X;
 				yLog = model.AxisLogBase.Y;
+				OnPropertyChanged(nameof(AxisXLog));
+				OnPropertyChanged(nameof(AxisYLog));
 			}
 		}
 

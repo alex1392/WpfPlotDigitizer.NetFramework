@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 
 namespace WpfPlotDigitizer.NetFramework
 {
+	// Does not work with Editor (as the actuall size of the content is changed)
 	public class Viewer : ContentControl
 	{
 		private FrameworkElement canvas;

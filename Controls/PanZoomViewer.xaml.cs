@@ -16,9 +16,10 @@ using System.Windows.Shapes;
 
 namespace WpfPlotDigitizer.NetFramework
 {
+
 	[ContentProperty(nameof(InnerContent))]
 	/// <summary>
-	/// Interaction logic for PanZoomViewer.xaml
+	/// Does not work with Editor, as the actuall size of its child is changed
 	/// </summary>1
 	public partial class PanZoomViewer : UserControl
 	{

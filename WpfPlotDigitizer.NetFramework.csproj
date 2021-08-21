@@ -9,8 +9,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{218C12FF-EABD-4DE3-8D11-913D6B85EAB9}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>WpfPlotDigitizer2</RootNamespace>
-    <AssemblyName>WpfPlotDigitizer2</AssemblyName>
+    <RootNamespace>WpfPlotDigitizer.NetFramework</RootNamespace>
+    <AssemblyName>WpfPlotDigitizer.NetFramework</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -61,20 +61,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Controls\PanZoomViewer.xaml.cs">
-      <DependentUpon>PanZoomViewer.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\ProgressPopup.xaml.cs">
       <DependentUpon>ProgressPopup.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Viewer.cs" />
-    <Page Include="Controls\Axis\Axis.xaml">
+    <Page Include="Controls\Axis.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\PanZoomViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\RangeSlider.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -84,27 +76,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\EditPage.xaml">
+    <Page Include="View\Pages\EditPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\FilterPage.xaml">
+    <Page Include="View\Pages\FilterPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\AxisLimitPage.xaml">
+    <Page Include="View\Pages\AxisLimitPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\AxisPage.xaml">
+    <Page Include="View\Pages\AxisPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\LoadPage.xaml">
+    <Page Include="View\Pages\LoadPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -112,40 +104,38 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controls\Axis\Inputs.cs" />
-    <Compile Include="Controls\Axis\InputsTypeConverter.cs" />
-    <Compile Include="Controls\PanZoom.cs" />
-    <Compile Include="Controls\RangeSlider.cs" />
-    <Compile Include="Controls\Axis\Axis.xaml.cs">
+    <Compile Include="View\PanZoom.cs" />
+    <Compile Include="Model\ImageConverter.cs" />
+    <Compile Include="Model\Methods.cs" />
+    <Compile Include="Themes\RangeSlider.cs" />
+    <Compile Include="Controls\Axis.xaml.cs">
       <DependentUpon>Axis.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ImageViewer.xaml.cs">
       <DependentUpon>ImageViewer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Model\ComboBoxTemplateSelector.cs" />
-    <Compile Include="Model\EditManager.cs" />
-    <Compile Include="Model\PageManager.cs" />
-    <Compile Include="Model\VisibilityConverter.cs" />
-    <Compile Include="Pages\EditPage.xaml.cs">
+    <Compile Include="View\EditManager.cs" />
+    <Compile Include="View\PageManager.cs" />
+    <Compile Include="View\Pages\EditPage.xaml.cs">
       <DependentUpon>EditPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\FilterPage.xaml.cs">
+    <Compile Include="View\Pages\FilterPage.xaml.cs">
       <DependentUpon>FilterPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\AxisLimitPage.xaml.cs">
+    <Compile Include="View\Pages\AxisLimitPage.xaml.cs">
       <DependentUpon>AxisLimitPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\AxisPage.xaml.cs">
+    <Compile Include="View\Pages\AxisPage.xaml.cs">
       <DependentUpon>AxisPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\LoadPage.xaml.cs">
+    <Compile Include="View\Pages\LoadPage.xaml.cs">
       <DependentUpon>LoadPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="View\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Pages\PreviewPage.xaml">
+    <Page Include="View\Pages\PreviewPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -157,14 +147,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Themes\Viewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Model.cs" />
-    <Compile Include="Pages\PreviewPage.xaml.cs">
+    <Compile Include="View\Pages\PreviewPage.xaml.cs">
       <DependentUpon>PreviewPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
