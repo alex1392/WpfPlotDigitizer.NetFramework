@@ -10,7 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace WpfPlotDigitizer.NetFramework
+namespace PlotDigitizer.NetFramework
 {
 	/// <summary>
 	/// Interaction logic for App.xaml
@@ -34,7 +34,7 @@ namespace WpfPlotDigitizer.NetFramework
 				new PreviewPage(model),
 			};
 			pageManager = new PageManager(pageList);
-			loadPage.PropertyChanged += LoadPage_PropertyChanged; ;
+			loadPage.PropertyChanged += LoadPage_PropertyChanged;
 			var mainWindow = new MainWindow(model, pageManager);
 			mainWindow.Show();
 #if DEBUG

@@ -23,7 +23,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace WpfPlotDigitizer.NetFramework
+namespace PlotDigitizer.NetFramework
 {
 	/// <summary>
 	/// Interaction logic for PreviewPage.xaml
@@ -213,7 +213,7 @@ namespace WpfPlotDigitizer.NetFramework
 
 				var cts = new CancellationTokenSource();
 				var token = cts.Token;
-				var saveTask = Task.Run(async () =>
+				var saveTask = Task.Run(() =>
 				{
 					switch (index) {
 						default:

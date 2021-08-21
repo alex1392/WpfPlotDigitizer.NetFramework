@@ -18,7 +18,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace WpfPlotDigitizer.NetFramework
+namespace PlotDigitizer.NetFramework
 {
 	/// <summary>
 	/// Interaction logic for AxisPage.xaml

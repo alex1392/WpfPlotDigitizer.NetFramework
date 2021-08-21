@@ -21,7 +21,7 @@ using System.Windows.Shapes;
 using PointCollection = System.Windows.Media.PointCollection;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace WpfPlotDigitizer.NetFramework
+namespace PlotDigitizer.NetFramework
 {
 	/// <summary>
 	/// Interaction logic for EditPage.xaml

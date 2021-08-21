@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
-namespace WpfPlotDigitizer.NetFramework
+namespace PlotDigitizer.NetFramework
 {
     /// <summary>
     /// A slider that provides the a range

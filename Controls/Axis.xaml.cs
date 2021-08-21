@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 
-namespace WpfPlotDigitizer.NetFramework
+namespace PlotDigitizer.NetFramework
 {
 	/// <summary>
 	/// Axis.xaml 的互動邏輯

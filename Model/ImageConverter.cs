@@ -23,7 +23,7 @@ using System.Windows.Interop;
 using PropertyChanged;
 using System.Windows.Shapes;
 
-namespace WpfPlotDigitizer.NetFramework
+namespace PlotDigitizer.NetFramework
 {
 	public static class ImageConverter
 	{
