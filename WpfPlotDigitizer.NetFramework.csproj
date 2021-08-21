@@ -67,19 +67,12 @@
     <Compile Include="Controls\ProgressPopup.xaml.cs">
       <DependentUpon>ProgressPopup.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TestPage.xaml.cs">
-      <DependentUpon>TestPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\Viewer.cs" />
     <Page Include="Controls\Axis\Axis.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\PanZoomViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="TestPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -121,7 +114,7 @@
     </Compile>
     <Compile Include="Controls\Axis\Inputs.cs" />
     <Compile Include="Controls\Axis\InputsTypeConverter.cs" />
-    <Compile Include="Controls\Axis\PanZoom.cs" />
+    <Compile Include="Controls\PanZoom.cs" />
     <Compile Include="Controls\RangeSlider.cs" />
     <Compile Include="Controls\Axis\Axis.xaml.cs">
       <DependentUpon>Axis.xaml</DependentUpon>
@@ -234,10 +227,7 @@
     <Resource Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Controls\Axis\pan.cur" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\1.png" />
+    <Resource Include="Assets\pan.cur" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

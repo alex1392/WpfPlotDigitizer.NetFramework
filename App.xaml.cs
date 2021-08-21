@@ -26,7 +26,6 @@ namespace WpfPlotDigitizer.NetFramework
 			var loadPage = new LoadPage(model);
 			var pageList = new List<Page>
 			{
-				//new TestPage(),
 				loadPage,
 				new AxisLimitPage(model),
 				new AxisPage(model),
@@ -47,7 +46,7 @@ namespace WpfPlotDigitizer.NetFramework
 				model.Filter = (Color.FromRgb(0, 0, 0), Color.FromRgb(126, 254, 254));
 				model.DataType = DataType.Discrete;
 
-				pageManager.GoToByTypeCommand.Execute(typeof(EditPage));
+				pageManager.GoToByTypeCommand.Execute(typeof(PreviewPage));
 			}
 #endif
 		}
