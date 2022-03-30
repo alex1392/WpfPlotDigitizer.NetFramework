@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -48,6 +49,7 @@ namespace PlotDigitizer.NetFramework
 			Unloaded += FilterPage_Unloaded;
 			PropertyChanged += FilterPage_PropertyChanged;
 		}
+
 		public FilterPage(Model model) : this()
 		{
 			this.model = model;
@@ -120,6 +122,5 @@ namespace PlotDigitizer.NetFramework
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
-
 	}
 }

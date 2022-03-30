@@ -1,4 +1,5 @@
 ﻿using GalaSoft.MvvmLight.CommandWpf;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,29 +24,27 @@ namespace PlotDigitizer.NetFramework
 	/// </summary>
 	public partial class MainWindow : Window, INotifyPropertyChanged
 	{
+		private readonly Model model;
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public PageManager PageManager { get; private set; }
+
+		public IEnumerable<string> PageNameList { get; private set; }
+
 		public MainWindow()
 		{
 			InitializeComponent();
 			DataContext = this;
 		}
 
-		private readonly Model model;
-
 		public MainWindow(Model model, PageManager pageManager) : this()
 		{
 			this.model = model;
 			this.PageManager = pageManager;
 			PageNameList = pageManager.PageList.Select(p => p.GetType().Name);
-			
 		}
 
-
-		public PageManager PageManager { get; private set; }
-		public IEnumerable<string> PageNameList { get; private set; }
-
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		
 		private void mainFrame_Navigating(object sender, NavigatingCancelEventArgs e)
 		{
 			// disable frame navigation to prevent keyboard input conflict

@@ -1,4 +1,12 @@
-﻿using System;
+﻿using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.UI;
+using Emgu.CV.Util;
+
+using PropertyChanged;
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -8,25 +16,22 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
-using Emgu.CV.UI;
-using Emgu.CV.Util;
-using Rectangle = System.Drawing.Rectangle;
-using Bitmap = System.Drawing.Bitmap;
-using PixelFormat = System.Drawing.Imaging.PixelFormat;
-using ImageViewer = Emgu.CV.UI.ImageViewer;
-using System.Windows.Interop;
-using PropertyChanged;
 using System.Windows.Shapes;
+
+using Bitmap = System.Drawing.Bitmap;
+using ImageViewer = Emgu.CV.UI.ImageViewer;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
+using Rectangle = System.Drawing.Rectangle;
 
 namespace PlotDigitizer.NetFramework
 {
 	public class Model : INotifyPropertyChanged
 	{
+		public event PropertyChangedEventHandler PropertyChanged;
+
 		public BitmapImage InputBitmapImage { get; set; }
 
 		public Image<Rgba, byte> InputImage { get; set; }
@@ -45,8 +50,6 @@ namespace PlotDigitizer.NetFramework
 		public Image<Rgba, byte> EdittedImage { get; set; }
 
 		public DataType DataType { get; set; }
-
-		public event PropertyChangedEventHandler PropertyChanged;
 
 		public Model()
 		{
@@ -104,5 +107,4 @@ namespace PlotDigitizer.NetFramework
 		Continuous,
 		Discrete,
 	}
-
 }

@@ -30,6 +30,7 @@ namespace PlotDigitizer.NetFramework
 			DataContext = this;
 			Unloaded += AxisLimitPage_Unloaded;
 		}
+
 		public AxisLimitPage(Model model) : this()
 		{
 			this.model = model;
@@ -95,6 +96,7 @@ namespace PlotDigitizer.NetFramework
 				}
 			}
 		}
+
 		public string AxisYLog
 		{
 			get => yLog.ToString();
@@ -111,6 +113,7 @@ namespace PlotDigitizer.NetFramework
 				}
 			}
 		}
+
 		public string AxisYMin
 		{
 			get => yMin.ToString();
@@ -127,6 +130,7 @@ namespace PlotDigitizer.NetFramework
 				}
 			}
 		}
+
 		public string AxisXMax
 		{
 			get => xMax.ToString();
@@ -143,6 +147,7 @@ namespace PlotDigitizer.NetFramework
 				}
 			}
 		}
+
 		public string AxisXLog
 		{
 			get => xLog.ToString();
@@ -159,6 +164,7 @@ namespace PlotDigitizer.NetFramework
 				}
 			}
 		}
+
 		public string AxisXMin
 		{
 			get => xMin.ToString();
@@ -177,6 +183,7 @@ namespace PlotDigitizer.NetFramework
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
+
 		private void OnPropertyChanged(string propertyName)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

@@ -39,7 +39,7 @@ namespace PlotDigitizer.NetFramework
 			mainWindow.Show();
 #if DEBUG
 			if (true) {
-				model.InputBitmapImage = new BitmapImage(new Uri(@"C:\Users\alex\Desktop\Coding\WpfPlotDigitizer\images\Screenshot 2021-06-26 231058.png"));
+				model.InputBitmapImage = new BitmapImage(new Uri(@"C:\Users\alex\OneDrive - National Chiao Tung University\Coding\WPF\WpfPlotDigitizer2\images\Screenshot 2021-06-26 231058.png"));
 				model.AxisLimit = new Rect(900, 0, 70, 20);
 				model.AxisLogBase = new Point(0, 0);
 				model.AxisLocation = new Rect(138, 100, 632, 399);

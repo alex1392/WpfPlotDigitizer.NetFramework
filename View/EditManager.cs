@@ -1,4 +1,5 @@
 ﻿using GalaSoft.MvvmLight.CommandWpf;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,13 +14,25 @@ namespace PlotDigitizer.NetFramework
 {
 	public class EditManager<TObject> : INotifyPropertyChanged
 	{
-		private EditManager()
-		{
-			UndoCommand = new RelayCommand(Undo, CanUndo);
-			RedoCommand = new RelayCommand(Redo, CanRedo);
-			GoToCommand = new RelayCommand<int>(GoTo, CanGoTo);
-			EditCommand = new RelayCommand<(TObject, string)>(Edit, CanEdit);
-		}
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public int Index { get; private set; } = 0;
+
+		public List<TObject> ObjectList { get; private set; }
+
+		public TObject CurrentObject => ObjectList[Index];
+
+		public List<string> TagList { get; private set; }
+
+		public string CurrentTag => TagList[Index];
+
+		public RelayCommand UndoCommand { get; private set; }
+
+		public RelayCommand RedoCommand { get; private set; }
+
+		public RelayCommand<int> GoToCommand { get; private set; }
+
+		public RelayCommand<(TObject obj, string tag)> EditCommand { get; set; }
 
 		public EditManager(TObject _object) : this()
 		{
@@ -33,49 +46,55 @@ namespace PlotDigitizer.NetFramework
 			};
 		}
 
-		public int Index { get; private set; } = 0;
-		public List<TObject> ObjectList { get; private set; } 
-		public TObject CurrentObject => ObjectList[Index];
-		public List<string> TagList { get; private set; }
-		public string CurrentTag => TagList[Index];
+		private EditManager()
+		{
+			UndoCommand = new RelayCommand(Undo, CanUndo);
+			RedoCommand = new RelayCommand(Redo, CanRedo);
+			GoToCommand = new RelayCommand<int>(GoTo, CanGoTo);
+			EditCommand = new RelayCommand<(TObject, string)>(Edit, CanEdit);
+		}
 
-		public RelayCommand UndoCommand { get; private set; }
-		public RelayCommand RedoCommand { get; private set; }
-		public RelayCommand<int> GoToCommand { get; private set; }
-		public RelayCommand<(TObject obj, string tag)> EditCommand { get; set; }
-
-		public event PropertyChangedEventHandler PropertyChanged;
 		protected virtual void OnPropertyChanged(string propertyName)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
-		
+
+		protected virtual bool CanEdit((TObject obj, string tag) arg)
+		{
+			return true;
+		}
+
 		private void Undo()
 		{
 			Index--;
 			UndoCommand.RaiseCanExecuteChanged();
 			RedoCommand.RaiseCanExecuteChanged();
 		}
+
 		private bool CanUndo()
 		{
 			return Index > 0;
 		}
+
 		private void Redo()
 		{
 			Index++;
 			UndoCommand.RaiseCanExecuteChanged();
 			RedoCommand.RaiseCanExecuteChanged();
 		}
+
 		private bool CanRedo()
 		{
 			return Index < ObjectList.Count - 1;
 		}
+
 		private void GoTo(int targetIndex)
 		{
 			Index = targetIndex;
 			UndoCommand.RaiseCanExecuteChanged();
 			RedoCommand.RaiseCanExecuteChanged();
 		}
+
 		private bool CanGoTo(int targetIndex)
 		{
 			return targetIndex >= 0 && targetIndex < TagList.Count;
@@ -93,10 +112,5 @@ namespace PlotDigitizer.NetFramework
 
 			Index++;
 		}
-		protected virtual bool CanEdit((TObject obj, string tag) arg)
-		{
-			return true;
-		}
 	}
 }
-

@@ -1,5 +1,7 @@
 ﻿using GalaSoft.MvvmLight.Command;
+
 using PropertyChanged;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+
 using Rectangle = System.Drawing.Rectangle;
 
 namespace PlotDigitizer.NetFramework
@@ -26,11 +29,14 @@ namespace PlotDigitizer.NetFramework
 	public partial class AxisPage : Page, INotifyPropertyChanged
 	{
 		private Model model;
+
 		public event PropertyChangedEventHandler PropertyChanged;
+
 		public ImageSource ImageSource { get; private set; }
 
 		// These properties need to share the same name with Model's properties
 		public double AxisLeft { get; set; }
+
 		public double AxisTop { get; set; }
 		public double AxisWidth { get; set; }
 		public double AxisHeight { get; set; }
@@ -44,12 +50,12 @@ namespace PlotDigitizer.NetFramework
 			GetAxisCommand = new RelayCommand(GetAxis);
 			Unloaded += AxisPage_Unloaded;
 		}
+
 		public AxisPage(Model model) : this()
 		{
 			this.model = model;
 			model.PropertyChanged += Model_PropertyChanged;
 		}
-
 
 		private void AxisPage_Unloaded(object sender, RoutedEventArgs e)
 		{
@@ -82,6 +88,5 @@ namespace PlotDigitizer.NetFramework
 			AxisWidth = axis.Width;
 			AxisHeight = axis.Height;
 		}
-
 	}
 }

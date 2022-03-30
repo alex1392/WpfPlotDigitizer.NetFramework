@@ -61,16 +61,12 @@ namespace WpfPlotDigitizer.NetFramework
 				}
 				return instance;
 			}
-			private set
-			{
-				instance = value;
-			}
 		}
 
 
 		public override object ProvideValue(IServiceProvider serviceProvider)
 		{
-			return instance;
+			return Instance;
 		}
 	}
 }

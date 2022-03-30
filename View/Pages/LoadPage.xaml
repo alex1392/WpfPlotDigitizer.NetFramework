@@ -12,8 +12,10 @@
 			Drop="Page_Drop"
 			DragOver="Page_DragOver"
 			AllowDrop="True"
-			Background="Transparent">
-	<Grid>
+			Background="Transparent"
+			x:Name="Root">
+	
+	<Grid DataContext="{Binding ElementName=Root}">
 		<Grid Name="objectGroup"
 					HorizontalAlignment="Center"
 					VerticalAlignment="Center">
@@ -66,7 +68,8 @@
 					 HorizontalAlignment="Left"
 					 Margin="55,66,0,222"
 					 Width="184"
-					 Visibility="Hidden" />
+					 Visibility="Hidden"
+					 Source="{Binding ImageSource}"/>
 
 	</Grid>
 </Page>

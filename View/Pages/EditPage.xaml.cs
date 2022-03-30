@@ -1,6 +1,8 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+
 using PropertyChanged;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,6 +20,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+
 using PointCollection = System.Windows.Media.PointCollection;
 using Rectangle = System.Drawing.Rectangle;
 
@@ -28,26 +31,51 @@ namespace PlotDigitizer.NetFramework
 	/// </summary>
 	public partial class EditPage : Page, INotifyPropertyChanged
 	{
-		private Model model;
-		private EditState editState;
-		private Point mouseDownPos;
 		private readonly double eraserOriginalSize;
 		private readonly double eraserOriginalBorderThickness;
 		private readonly Stopwatch stopwatch = new Stopwatch();
+
 		private readonly Dictionary<EditState, bool> isEditting = new Dictionary<EditState, bool>
 		{
 			{ EditState.Eraser, false },
 			{ EditState.Rectangle, false },
 			{ EditState.Polygon, false },
 		};
+
 		private readonly Dictionary<EditState, bool> isSelected = new Dictionary<EditState, bool>
 		{
 			{ EditState.Rectangle, false },
 			{ EditState.Polygon, false },
 		};
+
 		private readonly int fps = 24;
+		private Model model;
+		private EditState editState;
+		private Point mouseDownPos;
 
 		public event PropertyChangedEventHandler PropertyChanged;
+
+		public EditManager<Image<Rgba, byte>> EditManager { get; private set; }
+
+		public ImageSource ImageSource => Image?.ToBitmapSource();
+
+		public IEnumerable<string> UndoList
+		{
+			get
+			{
+				return EditManager?.TagList.GetRange(0, EditManager.Index + 1).Reverse<string>();
+			}
+		}
+
+		public IEnumerable<string> RedoList
+		{
+			get
+			{
+				return EditManager?.TagList.GetRange(EditManager.Index, EditManager.TagList.Count - EditManager.Index);
+			}
+		}
+
+		public Image<Rgba, byte> Image { get; private set; }
 
 		public EditPage()
 		{
@@ -66,27 +94,6 @@ namespace PlotDigitizer.NetFramework
 			model.PropertyChanged += Model_PropertyChanged;
 		}
 
-
-		public EditManager<Image<Rgba, byte>> EditManager { get; private set; }
-		public ImageSource ImageSource => Image?.ToBitmapSource();
-		public IEnumerable<string> UndoList
-		{
-			get
-			{
-				return EditManager?.TagList.GetRange(0, EditManager.Index + 1).Reverse<string>();
-			}
-		}
-		public IEnumerable<string> RedoList
-		{
-			get
-			{
-				return EditManager?.TagList.GetRange(EditManager.Index, EditManager.TagList.Count - EditManager.Index);
-			}
-		}
-
-		public Image<Rgba, byte> Image { get; private set; }
-
-
 		private void EditPage_Loaded(object sender, RoutedEventArgs e)
 		{
 			Application.Current.MainWindow.PreviewKeyDown += MainWindow_KeyDown;
@@ -97,6 +104,7 @@ namespace PlotDigitizer.NetFramework
 			model.EdittedImage = Image;
 			Application.Current.MainWindow.PreviewKeyDown -= MainWindow_KeyDown;
 		}
+
 		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(model.FilteredImage)) {
@@ -105,10 +113,12 @@ namespace PlotDigitizer.NetFramework
 				EditManager.PropertyChanged += EditManager_PropertyChanged;
 			}
 		}
+
 		private void OnPropertyChanged(string propertyName)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
+
 		private void EditManager_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(EditManager.Index)) {
@@ -336,6 +346,7 @@ namespace PlotDigitizer.NetFramework
 				selectPoly.Visibility = Visibility.Hidden;
 			}
 		}
+
 		private void PanZoomGrid_MouseWheel(object sender, double scale)
 		{
 			eraserRect.Width = eraserOriginalSize / scale;

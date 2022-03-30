@@ -19,6 +19,8 @@ namespace PlotDigitizer.NetFramework
 	/// </summary>
 	public partial class ProgressPopup : Window
 	{
+		public event EventHandler Canceled;
+
 		public ProgressPopup()
 		{
 			InitializeComponent();
@@ -29,7 +31,5 @@ namespace PlotDigitizer.NetFramework
 			Canceled?.Invoke(this, new EventArgs());
 			this.Close();
 		}
-
-		public event EventHandler Canceled;
 	}
 }

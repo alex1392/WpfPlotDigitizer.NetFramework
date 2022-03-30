@@ -19,45 +19,55 @@ namespace PlotDigitizer.NetFramework
 		  typeof(bool),
 		  typeof(Pan),
 		  new PropertyMetadata(default(bool), OnIsEnabledChanged));
-		[AttachedPropertyBrowsableForType(typeof(UIElement))]
-		public static bool GetIsEnabled(UIElement element)
-		  => (bool)element.GetValue(IsEnabledProperty);
-		public static void SetIsEnabled(UIElement element, bool value)
-		  => element.SetValue(IsEnabledProperty, value);
-
 
 		public static readonly DependencyProperty MouseButtonProperty =
 			DependencyProperty.RegisterAttached("MouseButton", typeof(MouseButton), typeof(Pan), new PropertyMetadata(MouseButton.Left));
+
+		public static readonly DependencyProperty KeyModifiersProperty =
+			DependencyProperty.RegisterAttached("KeyModifiers", typeof(ModifierKeys), typeof(Pan), new PropertyMetadata(ModifierKeys.None));
+
+		private static readonly Cursor panCursor = new Uri(@"/Assets/pan.cur", UriKind.Relative).ToCursor();
+
+		private static Cursor cursorCache;
+
+		private static Point mouseAnchor;
+
+		private static TranslateTransform translate;
+
+		private static Point translateAnchor;
+
+		private static bool IsPanning;
+
+		[AttachedPropertyBrowsableForType(typeof(UIElement))]
+		public static bool GetIsEnabled(UIElement element)
+		  => (bool)element.GetValue(IsEnabledProperty);
+
+		public static void SetIsEnabled(UIElement element, bool value)
+		  => element.SetValue(IsEnabledProperty, value);
+
 		[AttachedPropertyBrowsableForType(typeof(UIElement))]
 		public static MouseButton GetMouseButton(DependencyObject obj)
 		{
 			return (MouseButton)obj.GetValue(MouseButtonProperty);
 		}
+
 		public static void SetMouseButton(DependencyObject obj, MouseButton value)
 		{
 			obj.SetValue(MouseButtonProperty, value);
 		}
 
-		public static readonly DependencyProperty KeyModifiersProperty =
-			DependencyProperty.RegisterAttached("KeyModifiers", typeof(ModifierKeys), typeof(Pan), new PropertyMetadata(ModifierKeys.None));
 		[AttachedPropertyBrowsableForType(typeof(UIElement))]
 		public static ModifierKeys GetKeyModifiers(DependencyObject obj)
 		{
 			return (ModifierKeys)obj.GetValue(KeyModifiersProperty);
 		}
+
 		public static void SetKeyModifiers(DependencyObject obj, ModifierKeys value)
 		{
 			obj.SetValue(KeyModifiersProperty, value);
 		}
 
-
-		private static readonly Cursor panCursor = new Uri(@"/Assets/pan.cur", UriKind.Relative).ToCursor();
 		private static Cursor ToCursor(this Uri uri) => new Cursor(Application.GetResourceStream(uri).Stream);
-		private static Cursor cursorCache;
-		private static Point mouseAnchor;
-		private static TranslateTransform translate;
-		private static Point translateAnchor;
-		private static bool IsPanning;
 
 		private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
@@ -95,6 +105,7 @@ namespace PlotDigitizer.NetFramework
 			element.CaptureMouse();
 			IsPanning = true;
 		}
+
 		private static void Element_MouseMove(object sender, MouseEventArgs e)
 		{
 			if (!(sender is FrameworkElement element)) {
@@ -110,8 +121,8 @@ namespace PlotDigitizer.NetFramework
 			var toY = Math.Max(Math.Min(translateAnchor.Y + delta.Y, 0), element.ActualHeight * (1 - scale.ScaleY));
 			translate.BeginAnimation(TranslateTransform.XProperty, toX, 0);
 			translate.BeginAnimation(TranslateTransform.YProperty, toY, 0);
-
 		}
+
 		private static void Element_MouseUp(object sender, MouseButtonEventArgs e)
 		{
 			if (!(sender is FrameworkElement element)) {
@@ -154,7 +165,6 @@ namespace PlotDigitizer.NetFramework
 				};
 			}
 		}
-
 	}
 
 	/// <summary>
@@ -167,29 +177,38 @@ namespace PlotDigitizer.NetFramework
 		  typeof(bool),
 		  typeof(Zoom),
 		  new PropertyMetadata(OnIsEnabledChanged));
-		[AttachedPropertyBrowsableForType(typeof(UIElement))]
-		public static bool GetIsEnabled(UIElement element)
-		  => (bool)element.GetValue(IsEnabledProperty);
-		public static void SetIsEnabled(UIElement element, bool value)
-		  => element.SetValue(IsEnabledProperty, value);
 
 		public static readonly DependencyProperty KeyModifiersProperty =
 			DependencyProperty.RegisterAttached("KeyModifiers", typeof(ModifierKeys), typeof(Zoom), new PropertyMetadata(ModifierKeys.None));
+
+		public static readonly DependencyProperty MouseWheelProperty =
+			DependencyProperty.RegisterAttached("MouseWheel", typeof(EventHandler<double>), typeof(Zoom), new PropertyMetadata(null));
+
+		private static double LeaveTime = 1;
+
+		private static double WheelTime = 0.1;
+
+		[AttachedPropertyBrowsableForType(typeof(UIElement))]
+		public static bool GetIsEnabled(UIElement element)
+		  => (bool)element.GetValue(IsEnabledProperty);
+
+		public static void SetIsEnabled(UIElement element, bool value)
+		  => element.SetValue(IsEnabledProperty, value);
+
 		[AttachedPropertyBrowsableForType(typeof(UIElement))]
 		public static ModifierKeys GetKeyModifiers(DependencyObject obj)
 		{
 			return (ModifierKeys)obj.GetValue(KeyModifiersProperty);
 		}
+
 		public static void SetKeyModifiers(DependencyObject obj, ModifierKeys value)
 		{
 			obj.SetValue(KeyModifiersProperty, value);
 		}
 
-		public static readonly DependencyProperty MouseWheelProperty =
-			DependencyProperty.RegisterAttached("MouseWheel", typeof(EventHandler<double>), typeof(Zoom), new PropertyMetadata(null));
 		public static EventHandler<double> GetMouseWheel(DependencyObject obj) => (EventHandler<double>)obj.GetValue(MouseWheelProperty);
-		public static void SetMouseWheel(DependencyObject obj, EventHandler<double> value) => obj.SetValue(MouseWheelProperty, value);
 
+		public static void SetMouseWheel(DependencyObject obj, EventHandler<double> value) => obj.SetValue(MouseWheelProperty, value);
 
 		private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
@@ -205,9 +224,6 @@ namespace PlotDigitizer.NetFramework
 				element.MouseWheel -= Element_MouseWheel;
 			}
 		}
-
-		private static double LeaveTime = 1;
-		private static double WheelTime = 0.1;
 
 		private static void Element_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
@@ -254,6 +270,7 @@ namespace PlotDigitizer.NetFramework
 			(element.RenderTransform as TransformGroup).Children = transformsTemplate;
 			return absolute;
 		}
+
 		public static void EnsureTransforms(this UIElement element)
 		{
 			var transform = element.RenderTransform;
@@ -277,6 +294,7 @@ namespace PlotDigitizer.NetFramework
 			};
 			element.RenderTransformOrigin = new Point(0, 0);
 		}
+
 		/// <summary>
 		/// 針對<paramref name="animatable"/>執行泛型動畫。
 		/// </summary>

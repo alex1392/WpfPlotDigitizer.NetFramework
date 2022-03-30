@@ -1,10 +1,13 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+
 using Microsoft.Win32;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -49,21 +52,22 @@ namespace PlotDigitizer.NetFramework
 			model.PropertyChanged += Model_PropertyChanged;
 		}
 
-
 		private void LoadPage_Loaded(object sender, RoutedEventArgs e)
 		{
 #if DEBUG
 			imageControl.Visibility = Visibility.Visible;
 #endif
 		}
+
 		private void LoadPage_Unloaded(object sender, RoutedEventArgs e)
 		{
 			model.InputBitmapImage = Image;
 		}
+
 		private void LoadPage_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			
 		}
+
 		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(model.InputBitmapImage)) {
@@ -188,7 +192,5 @@ namespace PlotDigitizer.NetFramework
 				return null;
 			}
 		}
-
-		
 	}
 }

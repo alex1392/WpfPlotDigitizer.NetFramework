@@ -1,4 +1,12 @@
-﻿using System;
+﻿using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.UI;
+using Emgu.CV.Util;
+
+using PropertyChanged;
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -8,20 +16,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
-using Emgu.CV.UI;
-using Emgu.CV.Util;
-using Rectangle = System.Drawing.Rectangle;
-using Bitmap = System.Drawing.Bitmap;
-using PixelFormat = System.Drawing.Imaging.PixelFormat;
-using ImageViewer = Emgu.CV.UI.ImageViewer;
-using System.Windows.Interop;
-using PropertyChanged;
 using System.Windows.Shapes;
+
+using Bitmap = System.Drawing.Bitmap;
+using ImageViewer = Emgu.CV.UI.ImageViewer;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
+using Rectangle = System.Drawing.Rectangle;
 
 namespace PlotDigitizer.NetFramework
 {
@@ -84,6 +87,7 @@ namespace PlotDigitizer.NetFramework
 		{
 			CvInvoke.Rectangle(image, rect, new Rgba().MCvScalar, -1);
 		}
+
 		public static List<Point> GetContinuousPoints(Image<Rgba, byte> image)
 		{
 			var points = new List<Point>();
@@ -198,6 +202,7 @@ namespace PlotDigitizer.NetFramework
 			var r = (max2 - min2) / (max1 - min1);
 			return (min2 + (value1 - min1) * r);
 		}
+
 		public static double LogBase(double Base, double num)
 		{
 			return Math.Log(num) / Math.Log(Base);

@@ -1,8 +1,11 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using Emgu.CV.UI;
+
 using GalaSoft.MvvmLight.Command;
+
 using Microsoft.Win32;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,6 +24,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace PlotDigitizer.NetFramework
@@ -45,6 +49,12 @@ namespace PlotDigitizer.NetFramework
 
 		public bool IsContinuous { get; set; } = true;
 
+		public PreviewPage(Model model) : this()
+		{
+			this.model = model;
+			model.PropertyChanged += Model_PropertyChanged;
+		}
+
 		private PreviewPage()
 		{
 			InitializeComponent();
@@ -53,13 +63,6 @@ namespace PlotDigitizer.NetFramework
 			Loaded += PreviewPage_Loaded;
 			Unloaded += PreviewPage_Unloaded;
 			PropertyChanged += PreviewPage_PropertyChanged;
-		}
-
-
-		public PreviewPage(Model model) : this()
-		{
-			this.model = model;
-			model.PropertyChanged += Model_PropertyChanged;
 		}
 
 		private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -79,6 +82,7 @@ namespace PlotDigitizer.NetFramework
 				OnPropertyChanged(nameof(IsContinuous));
 			}
 		}
+
 		private void PreviewPage_Unloaded(object sender, RoutedEventArgs e)
 		{
 			model.DataType = IsDiscrete ? DataType.Discrete : DataType.Continuous;
@@ -91,17 +95,14 @@ namespace PlotDigitizer.NetFramework
 				var points = Methods.GetDiscretePoints(Image);
 				OnPropertyChanged(nameof(ImageSource));
 				data = Methods.TransformData(points, new Size(Image.Width, Image.Height), model.AxisLimit, model.AxisLogBase);
-
 			}
 			else if (e.PropertyName == nameof(IsContinuous) && IsContinuous) {
 				Image = model.EdittedImage.Copy();
 				var points = Methods.GetContinuousPoints(Image);
 				OnPropertyChanged(nameof(ImageSource));
 				data = Methods.TransformData(points, new Size(Image.Width, Image.Height), model.AxisLimit, model.AxisLogBase);
-
 			}
 		}
-
 
 		private void OnPropertyChanged(string propertyName)
 		{
@@ -112,7 +113,7 @@ namespace PlotDigitizer.NetFramework
 		{
 			var saveFileDialog = new SaveFileDialog();
 			saveFileDialog.Filter = "Excel |*.xlsx|" +
-				"CSV |*.csv|" + 
+				"CSV |*.csv|" +
 				"TXT |*.txt";
 			if (saveFileDialog.ShowDialog() == false)
 				return;
@@ -143,7 +144,7 @@ namespace PlotDigitizer.NetFramework
 				};
 				var wBook = excel.Workbooks.Add(Type.Missing);
 				var wSheet = (Excel._Worksheet)wBook.Worksheets[1];
-				try {	
+				try {
 					wBook.Activate();
 					wSheet.Activate();
 
@@ -248,6 +249,7 @@ namespace PlotDigitizer.NetFramework
 				}
 			}
 		}
+
 		private bool CanExport()
 		{
 			return true;
